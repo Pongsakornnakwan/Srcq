@@ -1,0 +1,99 @@
+﻿@using RichnessSoft.Entity.Class
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            Id="@ControlID"
+            InputId="@ControlID"
+            Attributes="@dictAttributes"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(Product.code)" Caption="@Lang.SysCode("รหัสสินค้า","code")" Width="10%" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(Product.name1),nameof(Product.name2)))" Caption="@Lang.SysCode("ชื่อสินค้า","name1")" Width="50%" />
+        @*<DxListEditorColumn FieldName="@nameof(Product.ExpProductTypeName)" Caption="@Lang.SysCode("ประเภทสินค้า","Type")" Width="40%" />*@
+    }
+</DxComboBox>
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "inputProduct";
+    [Parameter]
+    public Product BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<Product> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(Product.name1), nameof(Product.name2));
+    [Parameter]
+    public string InputName { get; set; } = "inputProduct";
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string Active { get; set; } = ConstUtil.ACTIVE.YES;
+    [Parameter]
+    public string ProdTypeCode { get; set; } = "";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    Dictionary<string, object> dictAttributes;
+    private IEnumerable<Product> liData;
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        gmSetDatasource();
+        await InvokeAsync(StateHasChanged);
+    }
+    private void gmSetDatasource()
+    {
+        gmReload(Active, ProdTypeCode);
+    }
+    public void gmReload(string pdTypeCode = "F")
+    {
+        gmReload(ConstUtil.ACTIVE.YES, pdTypeCode);
+    }
+    public void gmReload(string active = "Y", string pdTypeCode = "F")
+    {
+        Active = active;
+        ProdTypeCode = pdTypeCode;
+        this.liData = oQuery.LoadProductListData(Active, ProdTypeCode);
+        StateHasChanged();
+    }
+    public int gmRowCount => this.liData?.Count() ?? 0;
+    public Product gmGetRowData(int index = 0)
+    {
+        if (this.liData is null || gmRowCount <= index) { return null; }
+        return this.liData?.ElementAt(index) ?? null;
+    }
+    public Product gmGetRowData(string strCode)
+    {
+        if (this.liData is null || gmRowCount == 0 || UtilHelper.gmIsNullOrEmpty(strCode)) { return null; }
+        return this.liData?.Where(c => c.code == strCode)?.FirstOrDefault() ?? null;
+    }
+    public IEnumerable<Product> gmGetAllRowData => this.liData;
+    public Product gmGetRowDataById(int Id)
+    {
+        if (this.liData is null || this.liData.Count() == 0 || Id == 0) { return default; }
+        return this.liData?.Where(c => c.id == Id)?.FirstOrDefault() ?? default;
+    }
+}

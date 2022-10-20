@@ -1,0 +1,33 @@
+﻿@*<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>*@
+
+<MudBreakpointProvider>
+    <CascadingAuthenticationState>
+        <Router AppAssembly="@typeof(Program).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <NotAuthorized>
+                        @*<Login />*@
+                        <h1>Sorry!</h1>
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+            </Found>
+            <NotFound>
+                <CascadingAuthenticationState>
+                    <LayoutView Layout="@typeof(NotFoundLayout)">
+                        <p>Sorry, there's nothing at this address.</p>
+                    </LayoutView>
+                </CascadingAuthenticationState>
+            </NotFound>
+        </Router>
+    </CascadingAuthenticationState>
+</MudBreakpointProvider>

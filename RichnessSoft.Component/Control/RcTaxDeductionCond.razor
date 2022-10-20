@@ -1,0 +1,125 @@
+﻿@* GL : เงื่อนไขการหักภาษี *@
+@* กรณีเพิ่ม Parameter ต้องกำหนด SetParametersAsync เสมอ มันเกี่ยวกับเรื่อง Performance *@
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Id="@ControlID"
+            InputId="@ControlID"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@(nameof(ConstUtilBase.cTaxDedutionCond.Code))" Caption="@(Lang.SysCode("รหัส","code"))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(ConstUtilBase.cTaxDedutionCond.Name), nameof(ConstUtilBase.cTaxDedutionCond.name2)))" Caption="@(Lang.SysCode("ชื่อ","name1"))" VisibleIndex="1" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "cbxTaxDeductionCond";
+    [Parameter]
+    public string BindValue { get; set; } = "";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<ConstUtilBase.cTaxDedutionCond> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(ConstUtilBase.cTaxDedutionCond.Name), nameof(ConstUtilBase.cTaxDedutionCond.name2));
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(ConstUtilBase.cTaxDedutionCond.Code);
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    private IEnumerable<ConstUtilBase.cTaxDedutionCond> liData { get; set; } = Enumerable.Empty<ConstUtilBase.cTaxDedutionCond>();
+    protected override void OnInitialized()
+    {
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+    void LoadDataSource()
+    {
+        liData = ConstUtil.goListTaxDeductionCond.AsEnumerable() ?? Enumerable.Empty<ConstUtilBase.cTaxDedutionCond>();
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(ControlID):
+                    ControlID = (string)parameter.Value;
+                    break;
+                case nameof(BindValue):
+                    BindValue = (string)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<ConstUtilBase.cTaxDedutionCond>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ValueFieldName):
+                    ValueFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    public int gmRowCount => liData?.Count() ?? 0;
+    public ConstUtilBase.cTaxDedutionCond gmGetRowData(int index = 0)
+    {
+        if (liData is null || gmRowCount <= index) { return null; }
+        return liData.ElementAt(index) ?? null;
+    }
+    public ConstUtilBase.cTaxDedutionCond gmGetRowData(string strCode)
+    {
+        if (liData is null || gmRowCount == 0) { return null; }
+        return liData.Where(c => c.Code == strCode)?.FirstOrDefault() ?? null;
+    }
+}

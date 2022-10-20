@@ -1,0 +1,61 @@
+﻿@* Textbox : Bind *@
+@using RichnessSoft.Component.Shared
+@if (IsViewOnly)
+{
+    <input type="text" id="@ControlID" @bind="@BindValue" @bind:event="oninput" class="@CssTextSize @CssClass" name="@InputName" placeholder="@NullText" readonly="readonly" />
+}
+else
+{
+    <input type="text" id="@ControlID" @bind="@BindValue" @bind:event="oninput" class="@CssTextSize @CssClass" name="@InputName" placeholder="@NullText"/>
+}
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "inputTextHtml";
+    [Parameter]
+    public string BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string CssClass { get; set; } = "text-left";
+    [Parameter]
+    public string InputName { get; set; } = "inputTextHtml";
+
+    Dictionary<string, object> dictAttributes;
+    private string CssTextSize => GetControlSize();
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await base.InvokeAsync(StateHasChanged);
+    }
+    string GetControlSize()
+    {
+        string strRetValue = "";
+        if (WebConstUtil.Control.goTextSize == SizeMode.Small)
+        {
+            strRetValue = "form-control form-control-sm";
+        }
+        else if (WebConstUtil.Control.goTextSize == SizeMode.Medium)
+        {
+            strRetValue = "form-control";
+        }
+        else if (WebConstUtil.Control.goTextSize == SizeMode.Large)
+        {
+            strRetValue = "form-control form-control-lg";
+        }
+        else
+        {
+            strRetValue = "form-control";
+        }
+        return strRetValue;
+    }
+}

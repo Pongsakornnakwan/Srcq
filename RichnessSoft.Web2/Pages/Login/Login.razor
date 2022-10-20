@@ -1,0 +1,90 @@
+﻿@page "/Login"
+@attribute [AllowAnonymous]
+
+@inject AuthStateProvider AuthStateProvider
+
+<div class="login-one">
+    <div class="d-flex justify-center">
+        <MudContainer Class="mt-10" MaxWidth="MaxWidth.Small">
+            <MudPaper Class="rounded-lg pa-5">
+                <EditForm Model="@_loginView" OnValidSubmit="SubmitAsync">
+                    <MudGrid Spacing="1">
+                        <MudItem xs="12">
+                            <div class="d-flex justify-center">
+                                @*<img alt="Logo" src="@_logoImage" class="h-150px" />*@
+                                <MudImage Src="assets/images/logo_login.png" Width="350" Height="150" Alt="Logo" Elevation="0" Class="rounded-lg ma-4" />
+
+                            </div>
+
+                        </MudItem>
+                        <DataAnnotationsValidator />
+                        <MudItem xs="12">
+                            <MudTextField T="string" Label="UserName" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                          @bind-Value="_loginView.UserName" For="@(() => _loginView.UserName)" AdornmentColor="MudBlazor.Color.Primary" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField Label="Password" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                          @bind-Value="_loginView.Password" For="@(() => _loginView.Password)"
+                                          InputType="InputType.Password" AdornmentColor="MudBlazor.Color.Primary" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
+                        </MudItem>
+                        <MudItem xs="12" Class="d-flex justify-center mb-3">
+                            <MudButton ButtonType="ButtonType.Submit" FullWidth="true" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" Size="MudBlazor.Size.Large" Disabled="@(bIsLogin)">Sign In</MudButton>
+                        </MudItem>
+
+                    </MudGrid>
+                </EditForm>
+            </MudPaper>
+        </MudContainer>
+    </div>
+</div>
+
+@code {
+    LoginViewModel _loginView = new LoginViewModel();
+    //private system_setting _setting { get; set; }
+    private string _logoImage { get; set; }
+
+    private bool bIsLogin { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            //listCompany = await oQuery.GetCompanyListDataAsync();
+            //await gmFocusFirtEditor("username");
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        try
+        {
+            //await SessionStorage.ClearAsync();
+        }
+        catch (Exception) { }
+
+        if (_loginView is not null && !string.IsNullOrEmpty(_loginView.UserName?.Trim() ?? "") && !string.IsNullOrEmpty(_loginView.Password?.Trim() ?? ""))
+        {
+            ResultModel Data = loginService.Login(_loginView);
+            await Task.Delay(1000);
+            if (Data is not null && Data.Success)
+            {
+                User r = (User)Data.Data;
+                await SessionStorage.SetItemAsync("Username", r.username);
+                //store.SetState(_loginView.UserName, "01");
+                NavigationManager.NavigateTo($"/", true);
+                Task.Delay(1000);
+            }
+            else
+            {
+                await Swal.FireAsync("", Data.Message, "error");
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+}

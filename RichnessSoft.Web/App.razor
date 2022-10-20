@@ -1,0 +1,19 @@
+﻿<CascadingBlazoredModal>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(RichnessSoft.Web.Shared.MainLayout)">
+                <NotAuthorized>
+                    <h1>Sorry!</h1>
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <CascadingAuthenticationState>
+                <LayoutView Layout="@typeof(RichnessSoft.Web.Shared.MainLayout)">
+                    <h1>404 Error</h1>
+                    <p>Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </CascadingAuthenticationState>
+        </NotFound>
+    </Router>
+</CascadingBlazoredModal>

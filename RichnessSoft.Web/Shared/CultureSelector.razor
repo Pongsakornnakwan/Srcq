@@ -1,0 +1,67 @@
+﻿
+@inject NavigationManager Nav
+
+<div class="menu-item px-3" data-kt-menu-trigger="hover" data-kt-menu-placement="left-start">
+    <a href="#" class="menu-link px-2">
+        <span class="menu-title position-relative">
+            @Lng["SWITCHCULTURE"]
+            <span class="fs-8 rounded bg-light px-3 py-2 position-absolute translate-middle-y top-50 end-0">
+                @Culture?.DisplayName
+                <img class="w-15px h-15px rounded-1 ms-2" src="assets/media/flags/@(Region.EnglishName.Replace(" ", "-")).svg" alt="" />
+            </span>
+        </span>
+    </a>
+    <!--begin::Menu sub-->
+    <div class="menu-sub menu-sub-dropdown w-175px py-4">
+        @foreach (var culture in supportedCultures)
+        {
+            <!--begin::Menu item-->
+            <div class="menu-item px-3">
+                <a class="menu-link d-flex px-4 @(culture == Culture ? "active" : "")" @onclick="((_) => Culture = culture)">
+                    <span class="symbol symbol-20px me-4">
+                        <img class="rounded-1" src="assets/media/flags/@(new RegionInfo(culture.Name).EnglishName.Replace(" ", "-")).svg" alt="" />
+                    </span>@culture.DisplayName
+                </a>
+            </div>
+            <!--end::Menu item-->
+        }
+    </div>
+    <!--end::Menu sub-->
+</div>
+
+@code
+{
+    private CultureInfo[] supportedCultures = new[]
+                                                        {
+        new CultureInfo("en-US"),
+        new CultureInfo("th-TH"),
+    };
+
+    private RegionInfo Region { get; set; } = new RegionInfo(CultureInfo.CurrentCulture.Name);
+
+    protected override void OnInitialized()
+    {
+        Culture = CultureInfo.CurrentCulture;
+    }
+
+    private CultureInfo Culture
+    {
+        get => CultureInfo.CurrentCulture;
+        set
+        {
+            if (CultureInfo.CurrentCulture != value)
+            {
+                var uri = new Uri(Nav.Uri)
+                    .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+                var cultureEscaped = Uri.EscapeDataString(value.Name);
+                var uriEscaped = Uri.EscapeDataString(uri);
+
+                Region = new RegionInfo(value.Name);
+
+                Nav.NavigateTo(
+                    $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                    forceLoad: true);
+            }
+        }
+    }
+}

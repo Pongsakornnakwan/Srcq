@@ -1,0 +1,137 @@
+﻿@* Acchart : บัญชี *@
+@* กรณีเพิ่ม Parameter ต้องกำหนด SetParametersAsync เสมอ มันเกี่ยวกับเรื่อง Performance *@
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            AllowUserInput="false"
+            NullText="@NullText"
+            Attributes="@dictAttributes"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@((Acchart acct) => SelectedItemChanged(acct,goData))"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(Acchart.code)" Caption="@(Lang.SysCode("รหัส","code"))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+        <DxListEditorColumn FieldName="@nameof(Acchart.name1)" Caption="@(Lang.SysCode("ชื่อ","name1"))" VisibleIndex="1" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public Acchart BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<Acchart, object> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputItemAcctCode";
+    [Parameter]
+    public object goData { get; set; } = new object();
+    [Parameter]
+    public string TextFieldName { get; set; } = nameof(Acchart.name1);
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    Dictionary<string, object> dictAttributes;
+    private IEnumerable<Acchart> liData { get; set; } = Enumerable.Empty<Acchart>();
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(BindValue):
+                    BindValue = (Acchart)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<Acchart, object>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                case nameof(goData):
+                    goData = (object)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    private void LoadDataSource()
+    {
+        liData = oQuery.LoadAcchartListData() ?? Enumerable.Empty<Acchart>();
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (this.dictAttributes is not null && key is not null && value is not null && this.dictAttributes.ContainsKey(key) == false)
+        {
+            this.dictAttributes.Add(key, value);
+        }
+    }
+    public int gmRowCount => liData?.Count() ?? 0;
+    public Acchart gmGetRowDataById(int Id = 0)
+    {
+        if (liData is null || liData.Count() == 0) { return null; }
+        return liData.Where(c => c.id == Id)?.FirstOrDefault() ?? null;
+    }
+    public Acchart gmGetRowData(int index = 0)
+    {
+        if (this.liData is null || this.liData.Count() <= index) { return null; }
+        return this.liData.ElementAt(index) ?? null;
+    }
+    public Acchart gmGetRowData(string strCode)
+    {
+        if (this.liData is null || this.liData.Count() == 0) { return null; }
+        return this.liData.Where(c => c.code == strCode)?.FirstOrDefault() ?? null;
+    }
+}

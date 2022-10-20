@@ -1,0 +1,126 @@
+﻿@* user : ผู้ใช้งาน *@
+@* กรณีเพิ่ม Parameter ต้องกำหนด SetParametersAsync เสมอ มันเกี่ยวกับเรื่อง Performance *@
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Id="@ControlID"
+            InputId="@ControlID"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@(nameof(User.username))" Caption="@(Lang.SysCode("ผู้ใช้งาน","login"))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+        <DxListEditorColumn FieldName="@(nameof(User.firstname))" Caption="@(Lang.SysCode("ชื่อ","name1"))" VisibleIndex="1" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "cbxApproval";
+    [Parameter]
+    public string BindValue { get; set; } = "";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<User> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string TextFieldName { get; set; } = nameof(User.username);
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(User.username);
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = false;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    private IEnumerable<User> liData { get; set; } = Enumerable.Empty<User>();
+    protected override void OnInitialized()
+    {
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(ControlID):
+                    ControlID = (string)parameter.Value;
+                    break;
+                case nameof(BindValue):
+                    BindValue = (string)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<User>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ValueFieldName):
+                    ValueFieldName = (string)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    private void LoadDataSource()
+    {
+        liData = oQuery.LoadApprovalListData() ?? Enumerable.Empty<User>();
+    }
+    public int gmRowCount => liData?.Count() ?? 0;
+    public User gmGetRowData(int index = 0)
+    {
+        if (liData is null || liData.Count() <= index) { return null; }
+        return liData.ElementAt(index) ?? null;
+    }
+    public User gmGetRowData(string strUserName)
+    {
+        if (liData is null || liData.Count() == 0) { return null; }
+        return liData.Where(c => c.username == strUserName)?.FirstOrDefault() ?? null;
+    }
+}

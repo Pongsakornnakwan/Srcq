@@ -1,0 +1,240 @@
+﻿@*<div style="max-width:600px">*@
+<div>
+    <MudTextField @ref="RefTextField"
+                  Variant="ThemeApp.goVariant"
+                  Label="@Lng["BRANCH"]"
+                  @bind-Value="SearchText"
+                  Placeholder="@Lng["ButtonShowFilterRow"]"
+                  @onclick="@(()=>OnClickTextField())"
+                  @onkeydown="OnKeyDown"
+                  Adornment="Adornment.End"
+                  AdornmentIcon="@Icons.Filled.Search"
+                  AdornmentColor="MudBlazor.Color.Primary"
+                  Margin="ThemeApp.goMargin"
+                  Clearable="true" Immediate="true" />
+    <MudPopover Open="@_isOpen"
+                MaxHeight="300"
+                AnchorOrigin="@Origin.BottomCenter"
+                TransformOrigin="@Origin.TopCenter"
+                RelativeWidth="true">
+        <MudTable @ref="mudTable" Items="@_ListData" Hover="true" LoadingProgressColor="MudBlazor.Color.Info"
+                  Style="overflow-x: auto;" Dense="true" RowClassFunc="@SelectedRowClassFunc" OnRowClick="RowClickEvent" T="Branch"
+                  Filter="new Func<Branch, bool>(SearchFillter)">
+            <ToolBarContent>
+                <MudSpacer />
+                @if (BlankOk)
+                {
+                    <MudButton OnClick="ClearValue">Clear</MudButton>
+                }
+                <MudButton OnClick="ClosePopup">Close</MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>@Lng["BRANCH_CODE"]</MudTh>
+                <MudTh>@Lng["BRANCH_NAME"]</MudTh>
+                <MudTh>@Lng["BRANCH_NAME_2"]</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@Lng["BRANCH_CODE"]">
+                    <MudHighlighter Text="@context.code" HighlightedText="@_searchText" />
+                </MudTd>
+                <MudTd DataLabel="@Lng["BRANCH_NAME"]">
+                    <MudHighlighter Text="@context.name1" HighlightedText="@_searchText" />
+                </MudTd>
+                <MudTd DataLabel="@Lng["BRANCH_NAME_2"]">
+                    <MudHighlighter Text="@context.name2" HighlightedText="@_searchText" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPopover>
+</div>
+
+@code {
+
+        [Parameter]
+        public EventCallback<Branch> OnSelectionChange { get; set; }
+        [Parameter]
+        public bool BlankOk { get; set; } = false;
+        [Parameter]
+        public int BindValue { get; set; } = 0;
+        [Parameter]
+        public List<Branch> ItemList { get; set; } = new List<Branch>();
+
+    private bool _isOpen;
+    private string _searchText = "";
+    List<Branch> ListData = new List<Branch>();
+    List<Branch> _ListData = new List<Branch>();
+    private MudTable<Branch> mudTable;
+    private MudTextField<string> RefTextField;
+    private int selectedRowNBranchber = -1;
+
+    void ClosePopup() => _isOpen = false;
+    public int gmRowCount => _ListData?.Count() ?? 0;
+    public Branch gmGetRowData(int index = 0)
+    {
+        if (_ListData is null || _ListData.Count() <= index) { return null; }
+        _searchText = _ListData.ElementAt(index).ExpFullName;
+        return _ListData.ElementAt(index) ?? null;
+    }
+
+    async void OnClickTextField()
+    {
+        _isOpen = true;
+        RefTextField.SelectAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (_searchText == value)
+                return;
+            _searchText = value;
+            _ListData = ListData.Where(x => x.code.Contains(_searchText ?? "")
+            || x.name1.Contains(_searchText ?? "")
+            || (x.name2 ?? "").Contains(_searchText ?? "")).ToList();
+
+            _isOpen = true;
+            StateHasChanged();
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //await Task.Delay(1000);
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    { }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            { 
+                case nameof(OnSelectionChange):
+                    OnSelectionChange = (EventCallback<Branch>)parameter.Value;
+                    break;
+                case nameof(BlankOk):
+                    BlankOk = (bool)parameter.Value;
+                    break;
+                case nameof(BindValue):
+                    BindValue = (int)parameter.Value;
+                    break;
+                case nameof(ItemList):
+                    ItemList = (List<Branch>)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    private async void LoadDataSource()
+    {
+        if (ItemList.Count > 0)
+        {
+            ListData = ItemList;
+            _ListData = ItemList;
+
+        }
+        else
+        {
+            var r = await branchService.GetAll(store.companyid);
+            ListData = (List<Branch>)r.Data;
+            _ListData = ListData;
+            _searchText = "";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (BindValue > 0)
+            {
+                var SeleVal = _ListData.Where(x => x.id == BindValue).FirstOrDefault();
+                if (SeleVal != null)
+                    _searchText = SeleVal.ExpFullName;
+            }
+            else
+            {
+                if (BlankOk == false)
+                {
+                    _searchText = _ListData[0].ExpFullName;
+                    await OnSelectionChange.InvokeAsync(_ListData[0]);
+                }
+            }
+            StateHasChanged();
+        }
+        
+    }
+
+    async void ClearValue()
+    {
+        await OnSelectionChange.InvokeAsync(new Branch());
+        _searchText = "";
+        _isOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            _isOpen = false;
+        if (args.Key == "Escape")
+            _isOpen = false;
+        //SearchText = _searchTextShow;
+        //await InvokeAsync(StateHasChanged);
+    }
+
+    async void RowClickEvent(TableRowClickEventArgs<Branch> tableRowClickEventArgs)
+    {
+        _searchText = tableRowClickEventArgs.Item.ExpFullName;
+        await OnSelectionChange.InvokeAsync(tableRowClickEventArgs.Item);
+        _isOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private string SelectedRowClassFunc(Branch element, int rowNBranchber)
+    {
+        if (selectedRowNBranchber == rowNBranchber)
+        {
+            selectedRowNBranchber = -1;
+            return string.Empty;
+        }
+        else if (mudTable.SelectedItem != null && mudTable.SelectedItem.Equals(element))
+        {
+            selectedRowNBranchber = rowNBranchber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    private bool SearchFillter(Branch Branch)
+    {
+        if (string.IsNullOrWhiteSpace(_searchText)) return true;
+        if (Branch.code?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        if (Branch.name1?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        if (Branch.name2?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        return false;
+    }
+}

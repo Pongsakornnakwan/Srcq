@@ -1,0 +1,48 @@
+﻿@using RichnessSoft.Entity.Class
+@using RichnessSoft.Component.Shared
+
+<DxComboBox Data="@ConstUtil.goListValueAddedTax"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Id="@ControlID"
+            InputId="@ControlID"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+            SelectedItemChanged="@SelectedItemChanged"
+            ReadOnly="@IsViewOnly">
+    <DxListEditorColumn FieldName="code" Caption="@Lang.SysCode("รหัส","code")" Width="@DxGridHelper.Column.Width.Code" />
+    <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(ConstUtil.value_added_tax.name),nameof(ConstUtil.value_added_tax.name2)))" Caption="@Lang.SysCode("ชื่อ","name1")" />
+</DxComboBox>
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "cbxValueAddedTax";
+    [Parameter]
+    public string BindValue { get; set; } = "";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<ConstUtil.value_added_tax> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(ConstUtil.value_added_tax.name), nameof(ConstUtil.value_added_tax.name2));
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(ConstUtil.value_added_tax.code);
+    [Parameter]
+    public string NullText { get; set; } = "";
+    
+    protected override void OnInitialized()
+    {
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

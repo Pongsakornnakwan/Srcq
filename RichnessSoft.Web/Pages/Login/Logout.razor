@@ -1,0 +1,20 @@
+﻿@page "/Logout"
+
+@using Blazored.SessionStorage
+@using CurrieTechnologies.Razor.SweetAlert2
+
+
+
+@inject NavigationManager NavigationManager
+@inject ISessionStorageService SessionStorage
+@inject AuthenticationStateProvider AuthStateProvider
+@inject SweetAlertService Swal
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        ((AuthStateProvider)AuthStateProvider).MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("login", true);
+    }
+}

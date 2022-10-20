@@ -1,0 +1,51 @@
+﻿@using RichnessSoft.Component.Shared
+<DxTextBox Id="@ControlID"
+           InputId="@ControlID"
+           @bind-Text="@BindValue"
+           BindValueMode="BindValueMode.OnInput"
+           SizeMode="@WebConstUtil.Control.goTextSize"
+           ClearButtonDisplayMode="DevExpress.Blazor.DataEditorClearButtonDisplayMode.Never"
+           CssClass="@CssClass"
+           InputCssClass="@CssClass"
+           NullText="@NullText"
+           DisplayFormat="@DisplayFormat"
+           Attributes="@dictAttributes"
+           Password="@IsPassword"
+           Enabled="@Enabled"
+           ReadOnly="@IsViewOnly">
+</DxTextBox>
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "txtEditAutioBind";
+    [Parameter]
+    public string BindValue { get; set; } = "";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public bool IsPassword { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public string DisplayFormat { get; set; } = "";
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string CssClass { get; set; } = "text-left";
+    [Parameter]
+    public string InputName { get; set; } = "txtEditAutioBind";
+
+    Dictionary<string, object> dictAttributes;
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

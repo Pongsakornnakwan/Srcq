@@ -1,0 +1,192 @@
+﻿<div style="max-width:600px">
+    <MudTextField @ref="RefTextField"
+                  Variant="ThemeApp.goVariant"
+                  Label="@Lng["PROD_GRID_BARCODE_UM"]"
+                  @bind-Value="SearchText"
+                  Placeholder="@Lng["ButtonShowFilterRow"]"
+                  Immediate="true"
+                  Clearable="true"
+                  @onclick="@(()=>OnClickTextField())"
+                  @onkeydown="OnKeyDown"
+                  Adornment="Adornment.End"
+                  AdornmentIcon="@Icons.Filled.Search"
+                  AdornmentColor="MudBlazor.Color.Primary" />
+    <MudPopover Open="@_isOpen"
+                MaxHeight="300"
+                AnchorOrigin="@Origin.BottomCenter"
+                TransformOrigin="@Origin.TopCenter"
+                RelativeWidth="true" >
+        <MudTable @ref="mudTable" Items="@_ListData" Hover="true" LoadingProgressColor="MudBlazor.Color.Info"
+                  Style="overflow-x: auto;" Dense="true" RowClassFunc="@SelectedRowClassFunc" OnRowClick="RowClickEvent" T="UM"
+                  Filter="new Func<UM, bool>(SearchFillter)">
+            <ToolBarContent>
+                <MudSpacer />
+                @if (BlankOk)
+                {
+                    <MudButton OnClick="ClearValue">Clear</MudButton>
+                }
+                <MudButton OnClick="ClosePopup">Close</MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>@Lng["UM_CODE"]</MudTh>
+                <MudTh>@Lng["UM_NAME"]</MudTh>
+                <MudTh>@Lng["UM_NAME_2"]</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@Lng["UM_CODE"]">
+                    <MudHighlighter Text="@context.code" HighlightedText="@_searchText" />
+                </MudTd>
+                <MudTd DataLabel="@Lng["UM_NAME"]">
+                    <MudHighlighter Text="@context.name1" HighlightedText="@_searchText" />
+                </MudTd>
+                <MudTd DataLabel="@Lng["UM_NAME_2"]">
+                    <MudHighlighter Text="@context.name2" HighlightedText="@_searchText" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPopover>
+</div>
+
+@code {
+
+    [Parameter]
+    public EventCallback<UM> OnSelectionChange { get; set; }
+    [Parameter]
+    public bool BlankOk { get; set; } = false;
+    [Parameter]
+    public int BindValue { get; set; } = 0;
+
+    private bool _isOpen;
+    private string _searchText;
+    List<UM> ListData = new List<UM>();
+    List<UM> _ListData = new List<UM>();
+    private MudTable<UM> mudTable;
+    private MudTextField<string> RefTextField;
+    private int selectedRowNumber = -1;
+
+
+    void ClosePopup() => _isOpen = false;
+
+    async void OnClickTextField()
+    {
+        _isOpen = true;
+        RefTextField.SelectAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (_searchText == value)
+                return;
+            _searchText = value;
+            _ListData = ListData.Where(x => x.code.Contains(_searchText ?? "")
+            || x.name1.Contains(_searchText ?? "")
+            || (x.name2 ?? "").Contains(_searchText ?? "")).ToList();
+            _isOpen = true;
+            StateHasChanged();
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //await Task.Delay(1000);
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    { }
+
+    private void LoadDataSource()
+    {
+        var r = umService.GetAll(store.companyid);
+        ListData = (List<UM>)r.Data;
+        _ListData = ListData;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (BindValue > 0)
+            {
+                var SeleVal = _ListData.Where(x => x.id == BindValue).FirstOrDefault();
+                if (SeleVal != null)
+                    _searchText = SeleVal.ExpFullName;
+            }
+            else
+            {
+                if (BlankOk == false)
+                {
+                    _searchText = _ListData[0].ExpFullName;
+                    await OnSelectionChange.InvokeAsync(_ListData[0]);
+                }
+            }
+            StateHasChanged();
+        }
+    }
+
+    async void ClearValue()
+    {
+        await OnSelectionChange.InvokeAsync(new UM());
+        _searchText = "";
+        _isOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            _isOpen = false;
+        if (args.Key == "Escape")
+            _isOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async void RowClickEvent(TableRowClickEventArgs<UM> tableRowClickEventArgs)
+    {
+        _searchText = tableRowClickEventArgs.Item.code + "-" + tableRowClickEventArgs.Item.name1;
+        await OnSelectionChange.InvokeAsync(tableRowClickEventArgs.Item);
+        _isOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private string SelectedRowClassFunc(UM element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            return string.Empty;
+        }
+        else if (mudTable.SelectedItem != null && mudTable.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    private bool SearchFillter(UM um)
+    {
+        if (string.IsNullOrWhiteSpace(_searchText)) return true;
+        if (um.code?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        if (um.name1?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        if (um.name2?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        return false;
+    }
+}

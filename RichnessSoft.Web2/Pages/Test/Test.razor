@@ -1,0 +1,92 @@
+﻿@page "/Test"
+
+<div style="max-width:600px">
+    <MudTextField @bind-Value="SearchText" Placeholder="Type to search" Immediate="true" @onclick="@(()=>_isOpen=true)" @onkeydown="OnKeyDown" />
+    <MudPopover Open="@_isOpen"
+                MaxHeight="300"
+                AnchorOrigin="@Origin.BottomCenter"
+                TransformOrigin="@Origin.TopCenter"
+                RelativeWidth="true">
+        <MudTable @ref="mudTable" Items="@_ListData" Hover="true" LoadingProgressColor="MudBlazor.Color.Info"
+                  Style="overflow-x: auto;" Dense="true" RowClassFunc="@SelectedRowClassFunc" OnRowClick="RowClickEvent" T="UM">
+            <ToolBarContent>
+                <MudSpacer />
+                <MudButton OnClick="ClosePopup">ปิด</MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Code</MudTh>
+                <MudTh>Name1</MudTh>
+                <MudTh>Name2</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nr">@context.code</MudTd>
+                <MudTd DataLabel="Sign">@context.name1</MudTd>
+                <MudTd DataLabel="Name">@context.name2</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPopover>
+</div>
+
+@code {
+    private bool _isOpen;
+    private string _searchText;
+    void ClosePopup() => _isOpen = false;
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (_searchText == value)
+                return;
+            _searchText = value;
+            _ListData = ListData.Where(x => x.code.Contains(_searchText ?? "")
+            || (x.name1 ?? "").Contains(_searchText ?? "")).ToList();
+            _isOpen = true;
+            StateHasChanged();
+        }
+    }
+    List<UM> ListData = new List<UM>();
+    List<UM> _ListData = new List<UM>();
+
+    protected override void OnInitialized()
+    {
+        var r = umService.GetAll(store.companyid);
+        ListData = (List<UM>)r.Data;
+        _ListData = ListData;
+    }
+
+
+    private void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            _isOpen = false;
+    }
+
+    private void RowClickEvent(TableRowClickEventArgs<UM> tableRowClickEventArgs)
+    {
+        _searchText = tableRowClickEventArgs.Item.name1;
+        _isOpen = false;
+    }
+
+    private MudTable<UM> mudTable = new MudTable<UM>();
+    private int selectedRowNumber = -1;
+    private string SelectedRowClassFunc(UM element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            selectedRowNumber = -1;
+            //clickedEvents.Add("Selected Row: None");
+            return string.Empty;
+        }
+        else if (mudTable.SelectedItem != null && mudTable.SelectedItem.Equals(element))
+        {
+            selectedRowNumber = rowNumber;
+            //clickedEvents.Add($"Selected Row: {rowNumber}");
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+}

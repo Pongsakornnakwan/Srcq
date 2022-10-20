@@ -1,0 +1,133 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace RichnessSoft.Web.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="RichnessSoft.Web.styles.css" rel="stylesheet" />
+    <link href="_content/DevExpress.Blazor/dx-blazor.css" rel="stylesheet" />
+
+    <!--begin::Global Stylesheets Bundle(used by all pages)-->
+	<link href="assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+	<link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" /> 
+	<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,600,700|Kanit:300,400,500,600,700" rel="stylesheet" />
+    <!--end::Global Stylesheets Bundle-->
+
+    <component type="typeof(HeadOutlet)" render-mode="Server" />
+
+</head>
+
+
+<body id="kt_body" class="header-fixed header-tablet-and-mobile-fixed aside-enabled aside-fixed">
+    @RenderBody()
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.server.js"></script>
+	<script src="_content/CurrieTechnologies.Razor.SweetAlert2/sweetAlert2.min.js"></script>
+	<script src="_content/Blazored.Modal/blazored.modal.js"></script>
+    <script>
+		window.initializeCarousel = (id) => {
+			console.log("initializeCarousel > " + id);
+			$('#' + id).carousel({
+				interval: 5000,
+				ride: true
+			});
+		}
+		window.jsModal = {
+			show: function (id) {
+				$('#' + id).modal('show');
+				return "Ok";
+			},
+			hide: function (id) {
+				$('#' + id).modal('hide');
+				return "OK";
+			}
+		}
+		window.gmShowModal = (id) => {
+			$('#' + id).modal('show');
+			return "Ok";
+		};
+		window.gmHideModal = (id) => {
+			$('#' + id).modal('hide');
+			return "Ok";
+		};
+		window.jsfunction = {
+			focusElement: function (id) {
+				const element = document.getElementById(id);
+				element.focus();
+				setTimeout(function () {
+					element.focus();
+				}, 0);
+				return "Ok";
+			},
+			focusEditor: function (className) {
+				document.getElementsByClassName(className)[0].querySelector("input").focus();
+				return "Ok";
+			},
+			dxFocusEditor: function (id) {
+				$("#" + id).dxTextBox("instance").focus();
+				return "Ok";
+			}
+		}
+		window.gmIsDigit = (evt, txt) => {
+			var charCode = (evt.which) ? evt.which : event.keyCode;
+			var c = String.fromCharCode(charCode);
+			if (txt.indexOf(c) > 0 && charCode == 46) {
+				return false;
+			}
+			else if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+				return false;
+			}
+			return true;
+		};
+		window.gmScreenSize = (id) => {
+			var nHeight = $(window).height();
+			var nWidth = $(window).width();
+			var myObj = { Width: nWidth, Height: nHeight };
+			return JSON.stringify(myObj);
+		};
+		window.gmSetFocus = (id) => {
+			$('#' + id).focus();
+			setTimeout(function () {
+				$('#' + id).focus();
+			}, 0);
+			return "Ok";
+		};
+		window.gmSetReadOnly = (id, isReadOnly) => {
+			$('#' + id).prop('readonly', isReadOnly);
+			setTimeout(function () {
+				$('#' + id).prop('readonly', isReadOnly);
+			}, 0);
+			return "Ok";
+		};
+		window.gmSetDisabled = (id, isDisabled) => {
+			console.log("gmSetDisabled id > " + id);
+			console.log("gmSetDisabled isDisabled > " + isDisabled);
+			document.getElementById(id).disabled = isDisabled;
+			return "Ok";
+		};
+
+		//$(document).ready(function () {
+		//	// Handler for .ready() called.
+		//	$.fn.modal.Constructor.prototype.enforceFocus = function () { };
+		//});
+	</script>
+
+</body>
+</html>

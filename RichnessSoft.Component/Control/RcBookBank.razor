@@ -1,0 +1,195 @@
+﻿@* BOOK BANK : สมุดบัญชีเงินฝาก *@
+@* กรณีเพิ่ม Parameter ต้องกำหนด SetParametersAsync เสมอ มันเกี่ยวกับเรื่อง Performance *@
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Id="@ControlID"
+            InputId="@ControlID"
+            AllowUserInput="false"
+            NullText="@NullText"
+            Attributes="@dictAttributes"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(BookBank.code)" Caption="@(Lang.SysCode("รหัสสมุดบัญชี","Account code"))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+        @*<DxListEditorColumn FieldName="@nameof(BookBank.BankCode)" Caption="@(Lang.SysCode("รหัสธนาคาร","Bank Code"))" Width="@DxGridHelper.Column.Width.Code" />*@
+        <DxListEditorColumn FieldName="@nameof(BookBank.bookbanktype)" Caption="@(Lang.SysCode("ประเภทบัญชี","Account type"))" Width="15%" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(BookBank.name1),nameof(BookBank.name2)))" Caption="@(Lang.SysCode("ชื่อบัญชี","Account name1"))" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "cbxBookBank";
+    [Parameter]
+    public string BindValue { get; set; } = "";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<BookBank> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(BookBank.name1), nameof(BookBank.name1));
+    [Parameter]
+    public string InputName { get; set; } = "inputBookBank";
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(BookBank.id);
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+    [Parameter]
+    public int bankid { get; set; } = 0;
+    [Parameter]
+    public int bankbranchid { get; set; } = 0;
+    [Parameter]
+    public bool UsedBankFilter { get; set; } = false;
+
+    private IEnumerable<BookBank> liData { get; set; } = Enumerable.Empty<BookBank>();
+    private Dictionary<string, object> dictAttributes;
+    protected override void OnInitialized()
+    {
+        this.dictAttributes = new Dictionary<string, object>();
+        this.dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(ControlID):
+                    ControlID = (string)parameter.Value;
+                    break;
+                case nameof(BindValue):
+                    BindValue = (string)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<BookBank>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ValueFieldName):
+                    ValueFieldName = (string)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                case nameof(bankid):
+                    bankid = (int)parameter.Value;
+                    break;
+                case nameof(bankbranchid):
+                    bankbranchid = (int)parameter.Value;
+                    break;
+                case nameof(UsedBankFilter):
+                    UsedBankFilter = (bool)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+
+    private void LoadDataSource()
+    {
+        if (UsedBankFilter)
+        {
+            this.liData = oQuery.LoadBookBankListData(ConstUtil.ACTIVE.YES, this.bankid,this.bankbranchid) ?? Enumerable.Empty<BookBank>();
+        }
+        else
+        {
+            this.liData = oQuery.LoadBookBankListData(ConstUtil.ACTIVE.YES) ?? Enumerable.Empty<BookBank>();
+        }
+    }
+    public void gmSetBankCode(int ibankid = 0)
+    {
+        this.bankid = ibankid;
+        this.LoadDataSource();
+    }
+    public void gmSetBankBranchCode(int strBankBranchCode = 0)
+    {
+        this.bankbranchid = strBankBranchCode;
+        this.LoadDataSource();
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (this.dictAttributes is null)
+        {
+            this.dictAttributes = new Dictionary<string, object>();
+        }
+        if (this.dictAttributes is not null && key is not null && value is not null && this.dictAttributes.ContainsKey(key) == false)
+        {
+            this.dictAttributes.Add(key, value);
+        }
+    }
+
+    public int gmRowCount => liData?.Count() ?? 0;
+
+    public BookBank gmGetRowData(int index = 0)
+    {
+        if (this.liData is null || this.liData.Count() <= index) { return null; }
+        return this.liData?.ElementAt(index) ?? null;
+    }
+
+    public BookBank gmGetRowData(string strCode)
+    {
+        if (this.liData is null || UtilHelper.gmIsNullOrEmpty(strCode)) { return null; }
+        return this.liData?.Where(c => c.code == strCode)?.FirstOrDefault() ?? null;
+    }
+    public void gmSetEnable(bool Enabled = true)
+    {
+        this.Enabled = Enabled;
+        StateHasChanged();
+    }
+    public void gmSetReadOnly(bool ReadOnly = false)
+    {
+        this.IsViewOnly = ReadOnly;
+        StateHasChanged();
+    }
+}
+
+

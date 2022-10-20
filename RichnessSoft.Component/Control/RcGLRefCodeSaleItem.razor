@@ -1,0 +1,128 @@
+﻿@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            AllowUserInput="false"
+            NullText="@NullText"
+            Attributes="@dictAttributes"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+            SelectedItemChanged="@((OrderTrnH e)=>SelectedItemChanged(e,goData))"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    <DxListEditorColumn FieldName="code" Caption="@(Lang.SysCode("เลขที่ภายใน", "code"))" Width="@DxGridHelper.Column.Width.Code" />
+    <DxListEditorColumn FieldName="doc_ref_number" Caption="@(Lang.SysCode("เลขที่เอกสาร", "Ref.No"))" Width="@DxGridHelper.Column.Width.RefNo" />
+    <DxListEditorColumn FieldName="exp_cust_name" Caption="@(Lang.SysCode("ผู้จำหน่าย/ลูกค้า", "vendor/customer"))" />
+    <DxListEditorColumn FieldName="f_std_net_amt" Caption="@(Lang.SysCode("มูลค่าสุทธิ", "Net amount"))" Width="@DxGridHelper.Column.Width.Amount" />
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public OrderTrnH BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<OrderTrnH,object> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputItemDocRefId";
+    [Parameter]
+    public object goData { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = nameof(OrderTrnH.doccode);
+
+    private Dictionary<string, object> dictAttributes;
+    private IEnumerable<OrderTrnH> liData = Enumerable.Empty<OrderTrnH>();
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(BindValue):
+                    BindValue = (OrderTrnH)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<OrderTrnH,object>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                case nameof(goData):
+                    goData = (object)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    async Task LoadDataDataSource()
+    {
+        //AAA
+        if (this.goData is null) { return; }
+        if (this.goData.GetType() == typeof(GLTrnH))
+        {
+            //GLTrnH oRow = this.goData as GLTrnH;
+            //if (oRow is not null)
+            //{
+            //    liData = oQuery.LoadHeadListData<OrderTrnH>(oRow.companyid, oRow.branchid, oRow.docdate, oRow.docdate, oRow.doctype) ?? Enumerable.Empty<OrderTrnH>();
+            //}
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (dictAttributes is not null && key is not null && value is not null && dictAttributes.ContainsKey(key) == false)
+        {
+            dictAttributes.Add(key, value);
+        }
+    }
+    public void gmSetData(object oData)
+    {
+        this.goData = oData;
+    }
+    async Task gmSetDataSource()
+    {
+        await this.LoadDataDataSource();
+    }
+}
+

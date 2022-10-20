@@ -1,0 +1,93 @@
+﻿@* ACCBOOK : สมุดรายวัน *@
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+
+@inject QueryData oQuery
+
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Id="@ControlID"
+            InputId="@ControlID"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@(nameof(AccBook.code))" Caption="@(Lang.SysCode("รหัส","code"))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(AccBook.name1), nameof(AccBook.name2)))" Caption="@(Lang.SysCode("ชื่อ","name1"))" VisibleIndex="1" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public int companyid { get; set; }
+    [Parameter]
+    public string ControlID { get; set; } = "cbxAccBook";
+    [Parameter]
+    public string BindValue { get; set; } = "";
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<AccBook> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(AccBook.name1), nameof(AccBook.name2));
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(AccBook.id);
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    private IEnumerable<AccBook> liData { get; set; }
+    protected override void OnInitialized()
+    {
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+    void LoadDataSource()
+    {
+        LoadDataSource(companyid);
+    }
+    void LoadDataSource(int companyid)
+    {
+        liData = oQuery.LoadAccBookListData(companyid) ?? Enumerable.Empty<AccBook>();
+    }
+    public void gmSetDataSource(int intcompanyid)
+    {
+        this.companyid = intcompanyid;
+        LoadDataSource();
+    }
+    public int gmRowCount => liData?.Count() ?? 0;
+    public AccBook gmGetRowData(int index = 0)
+    {
+        if (liData is null || liData.Count() <= index) { return null; }
+        return liData.ElementAt(index) ?? null;
+    }
+    public AccBook gmGetRowData(string strCode)
+    {
+        if (liData is null || liData.Count() == 0) { return null; }
+        return liData.Where(c => c.code == strCode)?.FirstOrDefault() ?? null;
+    }
+}
+
+

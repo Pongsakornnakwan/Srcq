@@ -1,0 +1,42 @@
+﻿@using System.Net.Http
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.Extensions.Localization
+@using Microsoft.JSInterop
+@using MudBlazor
+@using RichnessSoft.Web2
+@using RichnessSoft.Web2.Shared
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Entity.Context
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Service.Store
+@using RichnessSoft.Service.BS
+@using RichnessSoft.Web2.Services
+@using CurrieTechnologies.Razor.SweetAlert2
+@using Blazored.SessionStorage
+@using RichnessSoft.Common
+@using AgentApp.Shared
+@using Blazored.FluentValidation
+@using RichnessSoft.Web2.Component.Control
+
+@inject IStringLocalizer<RichnessLanguage> Lng
+@inject ProfileStore store
+@inject IUserLoginService loginService
+@inject SweetAlertService Swal
+@inject ISessionStorageService SessionStorage
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IMenuService menuService
+@inject IUmService umService
+@inject ISnackbar _snackBar
+@inject IDialogService Dialog 
+@inject IOrderTranService orderTrnHService
+@inject IBranchService branchService
+@inject IBookService bookService
+@inject IPdGroupService pdGroupService
+@inject IColorService colorService

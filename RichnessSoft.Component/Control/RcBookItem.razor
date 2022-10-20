@@ -1,0 +1,162 @@
+﻿@* Book(ITEM) : เล่มเอกสาร *@
+@* กรณีเพิ่ม Parameter ต้องกำหนด SetParametersAsync เสมอ มันเกี่ยวกับเรื่อง Performance *@
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+
+@inject ProfileStore store
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            AllowUserInput="false"
+            NullText="@NullText"
+            Attributes="@dictAttributes"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@((Book oRow) => SelectedItemChanged(oRow, goData))"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(Book.code)" Caption="@(Lang.SysCode("รหัส", "code"))" Width="@DxGridHelper.Column.Width.Code" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(Book.name1),nameof(Book.name2)))" Caption="@(Lang.SysCode("ชื่อ", "name1"))" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public Book BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<Book, object> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputItemDocType";
+    [Parameter]
+    public object goData { get; set; } = new object();
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(Book.name1), nameof(Book.name2));
+    [Parameter]
+    public int branchid { get; set; }
+    [Parameter]
+    public string DocTypeCode { get; set; }
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Never;
+
+    private Dictionary<string, object> dictAttributes;
+    private int CorpId = 0;
+    private IEnumerable<Book> liData = Enumerable.Empty<Book>();
+    protected override void OnInitialized()
+    {
+        CorpId = store.getState.companyid;
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(BindValue):
+                    BindValue = (Book)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<Book, object>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                case nameof(goData):
+                    goData = (object)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(branchid):
+                    branchid = (int)parameter.Value;
+                    break;
+                case nameof(DocTypeCode):
+                    DocTypeCode = (string)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    async Task LoadDataDataSource()
+    {
+        liData = oQuery.LoadBookListData(this.CorpId,this.branchid, this.DocTypeCode) ?? Enumerable.Empty<Book>();
+        await InvokeAsync(StateHasChanged);
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (dictAttributes is not null && key is not null && value is not null && dictAttributes.ContainsKey(key) == false)
+        {
+            dictAttributes.Add(key, value);
+        }
+    }
+    public void gmSetProperties(int ibranchid, string strDocTypeCode)
+    {
+        this.branchid = ibranchid;
+        this.DocTypeCode = strDocTypeCode ?? "";
+        this.gmSetDataSource();
+    }
+    public void gmSetDataSource() => gmSetDataSource(this.branchid, this.DocTypeCode);
+    public void gmSetDataSource(int branchid, string strDocTypeCode)
+    {
+        liData = oQuery.LoadBookListData(this.CorpId,branchid, strDocTypeCode) ?? Enumerable.Empty<Book>();
+    }
+    public int gmRowCount => liData?.Count() ?? 0;
+    public Book gmGetRowData(int index)
+    {
+        if (this.liData is null || this.liData.Count() <= 0 || this.liData.Count() <= index) { return null; }
+        return this.liData.ElementAt(index) ?? null;
+    }
+    public enum WhereField { CODE = 1, FORMULA = 2 };
+    public Book gmGetRowData(string strFieldValue)
+    {
+        Book book = null;
+        if (this.liData is null || UtilHelper.gmIsNullOrEmpty(strFieldValue)) { return book; }
+        book = this.liData.Where(c => c.code == strFieldValue)?.FirstOrDefault() ?? null;
+        return book;
+    }
+}

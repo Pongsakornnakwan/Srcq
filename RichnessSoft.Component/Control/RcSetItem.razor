@@ -1,0 +1,73 @@
+﻿@using RichnessSoft.Entity.Model
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            Attributes="@dictAttributes"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+            SelectedItemChanged="@((ProductSet set) => SelectedItemChanged(set,goData))"
+            ReadOnly="@IsViewOnly">
+    <DxListEditorColumn FieldName="code" Caption="@Lang.SysCode("รหัส","code")" Width="@DxGridHelper.Column.Width.Code" />
+    <DxListEditorColumn FieldName="@(Lang.SysCode("name1","name2"))" Caption="@Lang.SysCode("ชื่อ","name1")" />
+    <DxListEditorColumn FieldName="@(Lang.SysCode("sname1","sname2"))" Caption="@Lang.SysCode("ชื่อย่อ","Short-name1")" />
+</DxComboBox>
+@code {
+    [Parameter]
+    public ProductSet BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public object goData { get; set; }
+    [Parameter]
+    public Action<ProductSet, object> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(ProductSet.name1), nameof(ProductSet.name2));
+    [Parameter]
+    public string Active { get; set; } = ConstUtil.ACTIVE.YES;
+    [Parameter]
+    public string ProdTypeCode { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputOrderSet";
+    [Parameter]
+    public string NullText { get; set; } = "";
+
+    Dictionary<string, object> dictAttributes;
+    IEnumerable<ProductSet> liData;
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        pmSetDatasource();
+        await InvokeAsync(StateHasChanged);
+    }
+    private void pmSetDatasource()
+    {
+        gmReload(Active,ProdTypeCode);
+    }
+    public void gmReload(string pdTypeCode = "F")
+    {
+        gmReload(Active, pdTypeCode);
+    }
+    public void gmReload(string active = "Y", string pdTypeCode = "F")
+    {
+        Active = active;
+        ProdTypeCode = pdTypeCode;
+        liData = oQuery.LoadSetListData(Active, ProdTypeCode);
+    }
+}

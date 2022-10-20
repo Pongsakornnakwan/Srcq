@@ -1,0 +1,143 @@
+﻿@* Address : TaxPayer *@
+@* กรณีเพิ่ม Parameter ต้องกำหนด SetParametersAsync เสมอ มันเกี่ยวกับเรื่อง Performance *@
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Id="@ControlID"
+            InputId="@ControlID"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@Lang.SysCode(nameof(Address.taxrepname),nameof(Address.taxrepname2))" Caption="@(Lang.SysCode("ชื่อ","name1"))" VisibleIndex="0" />
+        <DxListEditorColumn FieldName="@nameof(Address.taxrepbranchno)" Caption="@(Lang.SysCode("รหัสสาขา","Branch No."))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="2" />
+        <DxListEditorColumn FieldName="@nameof(Address.taxreptaxid)" Caption="@(Lang.SysCode("เลขที่ประจำตัวผู้เสียภาษี","Tax ID"))" Width="30%" VisibleIndex="3" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "inputTaxPayer";
+    [Parameter]
+    public int BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<Address> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(Address.taxrepname), nameof(Address.taxrepname2));
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(Address.id);
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+    [Parameter]
+    public Address.enumaddresstype enumAddressType { get; set; } = Address.enumaddresstype.Report_Tax;
+    [Parameter]
+    public Address.enumreftype enumRefType { get; set; } = Address.enumreftype.Invoice;
+
+    private IEnumerable<Address> liData { get; set; } = Enumerable.Empty<Address>();
+    protected override void OnInitialized()
+    {
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+    void LoadDataSource()
+    {
+        liData = oQuery.LoadTaxPayerListData(Address.enumaddresstype.Report_Tax) ?? Enumerable.Empty<Address>();
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(ControlID):
+                    ControlID = (string)parameter.Value;
+                    break;
+                case nameof(BindValue):
+                    BindValue = (int)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<Address>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ValueFieldName):
+                    ValueFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                case nameof(enumAddressType):
+                    enumAddressType = (Address.enumaddresstype)parameter.Value;
+                    break;
+                case nameof(enumRefType):
+                    enumRefType = (Address.enumreftype)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    public int gmRowCount => liData?.Count() ?? 0;
+    public Address gmGetRowData(int index = 0)
+    {
+        if (liData is null || liData.Count() <= index) { return null; }
+        return liData.ElementAt(index) ?? null;
+    }
+    public Address gmGetRowData(string strTaxPayer = "")
+    {
+        if (liData is null || liData.Count() == 0) { return null; }
+        return liData.Where(c => c.taxpayer == strTaxPayer)?.FirstOrDefault() ?? null;
+    }
+}

@@ -1,0 +1,55 @@
+﻿@using RichnessSoft.Entity.Model
+@using RichnessSoft.Component.Shared
+@using RichnessSoft.Service
+
+@inject QueryData oQuery
+<DxComboBox Data="@oQuery.LoadPdTypeListData()"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            Attributes="@dictAttributes"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(ProdType.code)" Caption="@Lang.SysCode("รหัส","code")" Width="@DxGridHelper.Column.Width.Code" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(ProdType.name1),nameof(ProdType.name2)))" Caption="@Lang.SysCode("ชื่อ","name1")" />
+    }
+</DxComboBox>
+@code {
+    [Parameter]
+    public ProdType BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<ProdType> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = nameof(ProdType.code);
+    [Parameter]
+    public string InputName { get; set; } = "inputOrderPdType";
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    Dictionary<string, object> dictAttributes;
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

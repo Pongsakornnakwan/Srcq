@@ -1,0 +1,152 @@
+﻿@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            AllowUserInput="false"
+            NullText="@NullText"
+            Attributes="@dictAttributes"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@((DocType oRow) => SelectedItemChanged(oRow, goData))"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    <DxListEditorColumn FieldName="@nameof(DocType.code)" Caption="@(Lang.SysCode("รหัส", "code"))" Width="@DxGridHelper.Column.Width.Code" />
+    <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(DocType.name1),nameof(DocType.name2)))" Caption="@(Lang.SysCode("ชื่อ", "name1"))" />
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public DocType BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<DocType, object> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputItemDocType";
+    [Parameter]
+    public object goData { get; set; } = new object();
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(DocType.name1), nameof(DocType.name2));
+    [Parameter]
+    public string[] aSystemType { get; set; }
+    [Parameter]
+    public string[] aDocGroup { get; set; }
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Never;
+
+    private Dictionary<string, object> dictAttributes;
+    private IEnumerable<DocType> liData = Enumerable.Empty<DocType>();
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(BindValue):
+                    BindValue = (DocType)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<DocType, object>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                case nameof(goData):
+                    goData = (object)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(aDocGroup):
+                    aDocGroup = (string[])parameter.Value;
+                    break;
+                case nameof(aSystemType):
+                    aSystemType = (string[])parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    async Task LoadDataDataSource()
+    {
+        this.liData = oQuery.LoadDocTypeListData(this.aSystemType,this.aDocGroup) ?? Enumerable.Empty<DocType>();
+        await InvokeAsync(StateHasChanged);
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (dictAttributes is not null && key is not null && value is not null && dictAttributes.ContainsKey(key) == false)
+        {
+            dictAttributes.Add(key, value);
+        }
+    }
+    public enum enumConditionType { System = 1, DocGroup = 2 };
+    public void gmSetCondition(enumConditionType enumCondition, string[] aValue)
+    {
+        switch (enumCondition)
+        {
+            case enumConditionType.System:
+                this.aSystemType = aValue;
+                break;
+            case enumConditionType.DocGroup:
+                this.aDocGroup = aValue;
+                break;
+            default:
+                break;
+        }
+    }
+    public void gmSetDataSource() => _= this.LoadDataDataSource();
+    
+    public int gmRowCount => this.liData?.Count() ?? 0;
+    public IEnumerable<DocType> gmGetAllRowData => this.liData;
+    public DocType  gmGetDataRow(int index)
+    {
+        if (this.liData is null || this.liData.Count() <= 0 || this.liData.Count() <= index) { return null; }
+        return this.liData.ElementAt(index) ?? null;
+    }
+    public DocType  gmGetDataRow(string strDocType)
+    {
+        if (this.liData is null || this.liData.Count() <= 0) { return null; }
+        return this.liData.FirstOrDefault(c => c.code == strDocType) ?? null;
+    }
+}

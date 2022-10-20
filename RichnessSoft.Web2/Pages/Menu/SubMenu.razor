@@ -1,0 +1,56 @@
+﻿@page "/SubMenu/{Parrentmenu}"
+
+@*<style>
+
+    .mud-card-content:hover {
+        border: 2px solid red;
+    }
+</style>*@
+
+<div class="row g-5">
+    @if (this.liMenus is not null)
+    {
+        <MudGrid Class="my-5" Spacing="2">
+            @foreach (Menu item in this.liMenus)
+            {
+                <MudItem xs="6" sm="6" md="3">
+                    <MudCard Elevation="15" Style="height:250px;" Class="rounded-xl border-dashed border-2 pa-4 mr-5" @onclick="(() => InvokeQrPinModal(item))">
+                        <MudCardContent Class="d-flex flex-column py-5">
+                            <MudIconButton Icon="@Icons.Material.TwoTone.SupervisorAccount" Color="MudBlazor.Color.Error" Class="pa-3 align-self-center" Size="MudBlazor.Size.Large"></MudIconButton>
+                            <MudText Typo="Typo.h5" Style="font-weight: 500;" Color="MudBlazor.Color.Default" Align="Align.Center">@item?.name1</MudText>
+                            <MudText Typo="Typo.subtitle2" Style="font-weight: 500;" Color="MudBlazor.Color.Default" Align="Align.Center">@item?.desc1</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public string Parrentmenu { get; set; }
+    public string OldParrentmenu { get; set; }
+    List<Menu> liMenus = new List<Menu>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        liMenus = await menuService.GetSubMenuAsync(Parrentmenu);
+        StateHasChanged();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (OldParrentmenu != Parrentmenu)
+        {
+            liMenus = menuService.GetSubMenu(Parrentmenu);
+            StateHasChanged();
+        }
+    }
+
+    async void InvokeQrPinModal(Menu menu)
+    {
+        NavigationManager.NavigateTo(menu.path + "/" + Parrentmenu);
+    }
+}

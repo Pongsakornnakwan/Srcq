@@ -1,0 +1,71 @@
+﻿@using RichnessSoft.Entity.Class
+@using RichnessSoft.Component.Shared
+
+<DxComboBox Data="@ConstUtil.goListValueAddedTax"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            AllowUserInput="false"
+            Attributes="@dictAttributes"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+            SelectedItemChanged="@((ConstUtilBase.value_added_tax e)=>SelectedItemChanged(e,goData))"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(ConstUtilBase.value_added_tax.code)" Caption="@(Lang.SysCode("รหัส","code"))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(ConstUtilBase.value_added_tax.name),nameof(ConstUtilBase.value_added_tax.name2)))" Caption="@(Lang.SysCode("ชื่อ","name1"))" VisibleIndex="1" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public ConstUtilBase.value_added_tax BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<ConstUtilBase.value_added_tax, object> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(ConstUtilBase.value_added_tax.name), nameof(ConstUtilBase.value_added_tax.name2));
+    [Parameter]
+    public object goData { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputItemDocRefValueAddedTax";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = false;
+
+    private Dictionary<string, object> dictAttributes;
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void gmSetAttributes(string key, object value)
+    {
+        if (dictAttributes is not null && key is not null && value is not null && dictAttributes.ContainsKey(key) == false)
+        {
+            dictAttributes.Add(key, value);
+        }
+    }
+    public void gmSetData(object oData)
+    {
+        this.goData = oData;
+    }
+}
+

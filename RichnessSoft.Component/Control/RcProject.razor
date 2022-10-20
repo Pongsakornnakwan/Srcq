@@ -1,0 +1,60 @@
+﻿@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+
+@inject QueryData oQuery
+<DxComboBox Data="@oQuery.LoadProjListData()"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Id="@ControlID"
+            InputId="@ControlID"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(Project.code)" Caption="@Lang.SysCode("รหัส","code")" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(Project.name1),nameof(Project.name2)))" Caption="@Lang.SysCode("ชื่อ","name1")" VisibleIndex="1" />
+    }
+</DxComboBox>
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "cbxProj";
+    [Parameter]
+    public string BindValue { get; set; } = "";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<Project> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = nameof(Project.ExpFullName); //Lang.SysCode(nameof(Project.name1), nameof(Project.name2));
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(Project.id);
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    protected override void OnInitialized()
+    {
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

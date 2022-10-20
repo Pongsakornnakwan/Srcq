@@ -1,0 +1,53 @@
+﻿@page "/SO/QT"
+@page "/SO/QT/{ParrentMenu}"
+@inherits razorBase
+
+<MudOverlay @bind-Visible="@_loaded" DarkBackground="true" ZIndex="9999" AutoClose="false" />
+<MudExpansionPanels MultiExpansion="true">
+    <MudExpansionPanel HideIcon="true" Dense="true" IsInitiallyExpanded="true">
+        <TitleContent>
+            <MudText Class="mt-1" Typo="Typo.body1" Color="MudBlazor.Color.Primary">@Lng["SO_OPTION_SEARCH"]</MudText>
+        </TitleContent>
+        <ChildContent>
+            <MudPaper Class="d-flex justify-center flex-grow-1 gap-4" Elevation="0">
+                <MudContainer MaxWidth="MaxWidth.Medium">
+                    <MudGrid Justify="Justify.Center">
+                        <MudItem xs="12" sm="3" md="6">
+                            <RcBranch @ref="oRcBranch" BlankOk="false" BindValue="@SelectBranch" OnSelectionChange="@((Branch value) =>SelectChange("BRANCH" , value))"></RcBranch>
+                        </MudItem>
+                        <MudItem xs="12" md="6" sm="3">
+                            <RcBook @ref="oRcBook" BlankOk="false" BranchId="@SelectBranch" DocType="@GbDocRefType.SALE.QUOTATION" BindValue="@SelectBook" OnSelectionChange="@((Book value) =>SelectChange("BOOK" , value))"></RcBook>
+                        </MudItem>
+                        <MudItem xs="12" sm="3" md="6">
+                            <MudDatePicker DateChanged="@BegDateChange" Label="ตั้งแต่วันที่" Editable="false" Placeholder="ตั้งแต่วันที่"
+                                           AutoClose="true" AllowKeyboardInput="false"
+                                           DateFormat="dd/MM/yyyy" Rounded="true"
+                                           Margin="ThemeApp.goMargin" TitleDateFormat="dd/MM/yyyy"
+                                           Variant="ThemeApp.goVariant" ReadOnly="false" Required="true"
+                                           RequiredError="Not Empty" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="6">
+                            <MudDatePicker DateChanged="@EndDateChange"  Label="ถึงวันที่" Editable="false" Placeholder="ถึงวันที่"
+                                           AutoClose="true" AllowKeyboardInput="false"
+                                           DateFormat="dd/MM/yyyy" Rounded="true"
+                                           Margin="ThemeApp.goMargin" TitleDateFormat="dd/MM/yyyy"
+                                           Variant="ThemeApp.goVariant" ReadOnly="false" Required="true"
+                                           RequiredError="Not Empty" />
+                        </MudItem>
+                    </MudGrid>
+                </MudContainer>
+            </MudPaper>
+            <br />
+
+        </ChildContent>
+    </MudExpansionPanel>
+    <MudExpansionPanel HideIcon="false" Dense="true" IsInitiallyExpanded="true">
+        <ChildContent>
+            <MudGrid>
+                <MudItem xs="12">
+                    <RcUm BlankOk="false" BindValue="@selectUM" OnSelectionChange="@((UM value) => SelectChange("UM" , value))"></RcUm>
+                </MudItem>
+            </MudGrid>
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>

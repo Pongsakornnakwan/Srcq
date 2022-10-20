@@ -1,0 +1,197 @@
+﻿@page "/login"
+
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Entity.Context
+@using RichnessSoft.Entity.Model
+@using Blazored.SessionStorage
+@using CurrieTechnologies.Razor.SweetAlert2
+@using RichnessSoft.Common
+@using RichnessSoft.Service
+@using RichnessSoft.Web.Services
+@using System.Globalization
+
+@inject NavigationManager NavigationManager
+@inject ISessionStorageService SessionStorage
+@inject AuthStateProvider AuthStateProvider
+@inject RicnessDbContext Db
+@inject IJSRuntime JsRuntime
+
+<!--begin::Authentication - Sign-in -->
+<div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed" style="background-image: url(assets/media/illustrations/sketchy-1/14.png">
+    <!--begin::Content-->
+    <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">
+        <!--begin::Logo-->
+        <a href="../../demo1/dist/index.html" class="mb-12">
+            <img alt="Logo" src="assets/media/logos/logo_login.png" class="h-150px" />
+        </a>
+        <!--end::Logo-->
+        <!--begin::Wrapper-->
+        <div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
+            <!--begin::Form-->
+            <EditForm Model="@LoginData" Context="EditFormContext" OnValidSubmit="@DoLogin">
+
+
+                @*<form class="form w-100" novalidate="novalidate" id="kt_sign_in_form" >*@
+                <!--begin::Heading-->
+                <div class="text-center mb-10">
+                    <!--begin::Title-->
+                    <h1 class="text-dark mb-3">Sign In</h1>
+                    <!--end::Title-->
+                </div>
+                <!--begin::Heading-->
+                <!--begin::Input group-->
+                <div class="fv-row mb-10">
+                    <!--begin::Label-->
+                    <label class="form-label fs-6 fw-bolder text-dark">Username</label>
+                    <!--end::Label-->
+                    <!--begin::Input-->
+                    <input class="form-control form-control-lg form-control-solid" type="text" name="email" autocomplete="off" Id="username" @bind="LoginData.UserName" />
+                    <!--end::Input-->
+                </div>
+                <!--end::Input group-->
+                <!--begin::Input group-->
+                <div class="fv-row mb-10">
+                    <!--begin::Wrapper-->
+                    <div class="d-flex flex-stack mb-2">
+                        <!--begin::Label-->
+                        <label class="form-label fw-bolder text-dark fs-6 mb-0">Password</label>
+                        <!--end::Label-->
+                    </div>
+                    <!--end::Wrapper-->
+                    <!--begin::Input-->
+                    <input class="form-control form-control-lg form-control-solid" type="password" name="password" Id="password" autocomplete="off" @bind="LoginData.Password" />
+                    <!--end::Input-->
+                </div>
+                <!--end::Input group-->
+                <!--begin::Actions-->
+                <div class="text-center">
+                    <!--begin::Submit button-->
+                    <button type="submit" id="kt_sign_in_submit" class="btn btn-lg btn-primary w-100 mb-5">
+                        <span class="indicator-label">Sign In</span>
+                        <span class="indicator-progress">
+                            Please wait...
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                        </span>
+                    </button>
+                    <!--end::Submit button-->
+                </div>
+                <!--end::Actions-->
+                @*</form>*@
+            </EditForm>
+
+            <!--end::Form-->
+        </div>
+        <!--end::Wrapper-->
+    </div>
+    <!--end::Content-->
+</div>
+<!--end::Authentication - Sign-in-->
+<DxPopup HeaderText="เลือกบริษัทเข้าใช้งาน"
+         @bind-Visible="@PopupCompanyVisible"
+         CssClass="popupLarge"
+         ShowCloseButton="false">
+    <Content>
+        <DxDataGrid Data="@listCompany"
+                    PageSize="20"
+                    ShowFilterRow="false"
+                    RowClick="@PopupCompanyRowClick">
+            <Columns>
+                @*<DxDataGridColumn Width="30%" Field="@nameof(company.code)" Caption="@RinssSText.CompanyCode"  />
+                <DxDataGridColumn Width="70%" Field="@nameof(company.name)" Caption="@RinssSText.CompanyName" />*@
+                <DxDataGridColumn Width="30%" Field="@nameof(Company.code)" Caption="@Lang.SysCode("รหัสบริษัท","Company code")" />
+                <DxDataGridColumn Width="70%" Field="@nameof(Company.ExpCompanyName)" Caption="@Lang.SysCode("ชื่อบริษัท","Company name1")" />
+            </Columns>
+        </DxDataGrid>
+    </Content>
+</DxPopup>
+
+
+@code {
+
+    bool PopupCompanyVisible = false;
+    List<Company> listCompany = new List<Company>();
+    LoginViewModel LoginData = new LoginViewModel();
+    User Data = new User();
+
+    protected override async Task OnInitialized()
+    {
+        store.AddChangeListeners(() => { StateHasChanged(); });
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            listCompany = await oQuery.GetCompanyListDataAsync();
+            //await gmFocusFirtEditor("username");
+        }
+    }
+
+    async Task gmFocusFirtEditor(string id)
+    {
+        var oResult = await JsRuntime.InvokeAsync<string>("gmSetFocus", new object[] { id });
+        if (oResult is not null)
+        {
+            listCompany = await oQuery.GetCompanyListDataAsync();
+        }
+    }
+
+    async void PopupCompanyRowClick(DataGridRowClickEventArgs<Company> args)
+    {
+        if (args.MouseEventArgs.Detail == 2)
+        {
+            PopupCompanyVisible = false;
+            await SessionStorage.SetItemAsync("Username", Data.username);
+            await SessionStorage.SetItemAsync("Staff", Data);
+            await SessionStorage.SetItemAsync("Company",args.DataItem.code.ToString());
+
+            //await iCaching.SetObjectAsync("Profile:"+Data.userName, Data);
+            //var xx = await cache.GetObjectAsync<user>("Profile:" + Data.userName);
+            store.SetState(Data.username, args.DataItem.code);
+            ((AuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(Data.username);
+            var oAuthState = await AuthStateProvider.GetAuthenticationStateAsync();
+            NavigationManager.NavigateTo($"/", true);
+        }
+
+    }
+    async void DoLogin()
+    {
+        try
+        {
+            await SessionStorage.ClearAsync();
+        }
+        catch (Exception) { }
+        if (LoginData is not null && !string.IsNullOrEmpty(LoginData.UserName?.Trim() ?? "") && !string.IsNullOrEmpty(LoginData.Password?.Trim() ?? ""))
+        {
+            //Data = Db.user.Where(p => p.userName.Equals(LoginData.username) && p.password.Equals(Utils.HasPassword(LoginData.password)))?.FirstOrDefault();
+            string strUserName = LoginData.UserName?.Trim() ?? "";
+            string strUserPwd = LoginData.Password?.Trim() ?? "";
+            Data = Db.User?.Where(p => p.username.Equals(strUserName))?.FirstOrDefault() ?? null;
+            if (Data is not null)
+            {
+                if ( Data.password.Equals(CommonFunc.EncryptData(strUserPwd)))
+                {
+                    PopupCompanyVisible = true;
+                }
+                else
+                {
+                    await Swal.FireAsync("", "Invalid password", "error");
+                    await gmFocusFirtEditor("password");
+                }
+            }
+            else
+            {
+                await Swal.FireAsync("", Lang.SysCode("ไม่พบผู้ใช้งาน", "User not found"), "error");
+                await gmFocusFirtEditor("username");
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+     async void initialGloabalVar()
+    {
+       
+        await InvokeAsync(StateHasChanged);
+    }
+}

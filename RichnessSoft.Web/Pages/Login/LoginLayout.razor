@@ -1,0 +1,26 @@
+﻿@inherits LayoutComponentBase
+
+<body id="kt_body" class="bg-body">
+
+    <!--begin::Root-->
+    <div class="d-flex flex-column flex-root">
+        @Body
+    </div>
+    <!--end::Root-->
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+</body>
+
+@code {
+
+}

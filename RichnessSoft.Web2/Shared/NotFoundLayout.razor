@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+
+@*<MudThemeProvider Theme="AppTheme.DefaultTheme" />*@
+<MudSnackbarProvider />
+<MudContainer MaxWidth="MaxWidth.Small">
+    <div class="d-flex flex-column">
+        <img src="assets/images/logo_login.png" />
+        <MudText Typo="Typo.h5" Class="mt-6" Align="Align.Center">Page not found</MudText>
+        <MudItem xs="12" sm="12" md="12">
+            <div class="pa-4 justify-center my-4 mud-text-align-center">
+                <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" Size="MudBlazor.Size.Large" Link="/">Home</MudButton>
+            </div>
+        </MudItem>
+    </div>
+</MudContainer>

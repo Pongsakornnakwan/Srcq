@@ -1,0 +1,42 @@
+﻿@inherits RichnessSoft.Web.Shared.RazorBase
+
+@using System.Net.Http
+@using CurrieTechnologies.Razor.SweetAlert2
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using RichnessSoft.Entity.Context
+@using RichnessSoft.Service
+@using RichnessSoft.Service.Store
+@using DevExpress.Blazor
+
+@using Blazored.SessionStorage
+@using Blazored.LocalStorage
+@using RichnessSoft.Web.Services
+@using Blazored.Modal
+@using Blazored.Modal.Services
+@using RichnessSoft.Component.Shared
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Common
+@using RichnessSoft.Component.Control
+
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<RichnessLanguage> Lng
+
+@inject ProtectedSessionStorage iSessionStorage
+@inject ISessionStorageService SessionStorage
+@inject SweetAlertService Swal
+@inject ProfileStore store
+@inject QueryData oQuery
+@inject RicnessDbContext Db
+@inject NavigationManager NavigationManager
+@inject ISessionStorageService SessionStorage
+@inject AuthenticationStateProvider AuthStateProvider
+@inject SweetAlertService Swal

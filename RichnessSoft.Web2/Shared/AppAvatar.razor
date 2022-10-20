@@ -1,0 +1,31 @@
+﻿@if (store != null)
+{
+    if (store.CurentCompany != null)
+    {
+        <h3>@store.CompanyName</h3>
+    }
+}
+
+@code {
+    string _companyName = "";
+
+    protected override void OnInitialized()
+    {
+        store.OnChange += StateHasChanged;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) {
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+        }
+    }
+}

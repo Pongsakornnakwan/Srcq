@@ -1,0 +1,127 @@
+﻿@using AgentApp.Shared
+@using RichnessSoft.Web2.Pages.Login
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_currentTheme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<AuthorizeView>
+    <Authorized>
+        <MudLayout>
+            <MudAppBar Elevation="0">
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="MudBlazor.Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+                <MudSpacer />
+                @*                <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Link="https://mudblazor.com/" Target="_blank" />
+                <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/MudBlazor/MudBlazor/" Target="_blank" />*@
+                <AppAvatar></AppAvatar>
+
+                @*<MudThemeManagerButton OnClick="@((e) => OpenThemeManager(true))" />
+                <MudThemeManager Open="_themeManagerOpen" OpenChanged="OpenThemeManager" Theme="_themeManager" ThemeChanged="UpdateTheme" />*@
+            </MudAppBar>
+            @*DisableOverlay="true" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true" *@
+            <MudDrawer @bind-Open="_drawerOpen" DisableOverlay="true" Width="350px" Elevation="1">
+                @if (_drawerOpen)
+                {
+                    <MudDrawerHeader>
+                        <MudCard Elevation="0" Square="true" Style="background-color: transparent" Width="300px">
+                            <MudCardContent Class="d-flex flex-column justify-center py-3">
+                                <AppLogo></AppLogo>
+                                @*<MudText Typo="Typo.h6" Align="Align.Center" Class="mt-1" Style="font-weight: 700;" Color="Color.Primary">Amino Vit Family</MudText>*@
+                                <MudText Typo="Typo.caption" Align="Align.Center" Style="font-weight: 600;" Color="MudBlazor.Color.Error">v1.0</MudText>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudDrawerHeader>
+                }
+                <NavMenu />
+            </MudDrawer>
+            <MudMainContent>
+                <MudContainer MaxWidth="MaxWidth.False" Class="mt-1 px-1">
+                    <MudPaper Class="pa-4" Style="@($"background:#F5F8FA;")">
+                        @Body
+                    </MudPaper>
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </Authorized>
+    <NotAuthorized>
+        <Login></Login>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    bool _drawerOpen = true;
+    private MudTheme _currentTheme;
+    public bool _themeManagerOpen = false;
+
+
+    protected override void OnInitialized()
+    {
+        _currentTheme = AppTheme.DefaultTheme;
+        store.OnChange += StateHasChanged;
+        StateHasChanged();
+    }
+
+    protected override  async Task OnInitializedAsync()
+    {
+        try
+        {
+            //store.AddChangeListeners(() => { StateHasChanged(); });
+            //string goCompany = await SessionStorage.GetItemAsync<string>("Company");
+            if (store.CurentCompany == null)
+            {
+                var goUser = await Task.Run(() => SessionStorage.GetItemAsync<string>("Username"));
+                await Task.Run(() => store.SetState(goUser.Result, "01"));
+            }
+        }
+        catch (Exception)
+        {
+        }
+    }
+
+
+    void OpenThemeManager(bool value)
+    {
+        _themeManagerOpen = value;
+    }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                //store.AddChangeListeners(() => { StateHasChanged(); });
+                ////string goCompany = await SessionStorage.GetItemAsync<string>("Company");
+                ////var goUser = await Task.Run(() => SessionStorage.GetItemAsync<string>("Username"));
+                //var task = Task.Run(async () => await SessionStorage.GetItemAsync<string>("Username"));
+                //var goUser = task.Result;
+                //store.SetState(goUser, "01");
+            }
+            catch (Exception)
+            {
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+
+    }
+
+}

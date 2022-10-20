@@ -1,0 +1,74 @@
+﻿@using RichnessSoft.Component.Shared
+<DxSpinEdit Id="@ControlID"
+            InputId="@ControlID"
+            Value="@BindValue"
+            BindValueMode="BindValueMode.OnLostFocus"
+            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+            Increment="@Increment"
+            MinValue="@MinValue"
+            MaxValue="@MaxValue"
+            ShowSpinButtons="@ShowSpinButtons"
+            SizeMode="@WebConstUtil.Control.goSpinEditSize"
+            T="decimal"
+            DisplayFormat="@DisplayFormat"
+            InputCssClass="@CssClass"
+            CssClass="@CssClass"
+            NullText="@NullText"
+            ReadOnly="@IsViewOnly"
+            Enabled="@Enabled"
+            Attributes="@dictAttributes"
+            ValueExpression="@(()=> BindValue)"
+            ValueChanged="@OnValueChanged" >
+</DxSpinEdit>
+
+@code {
+    [Parameter]
+    public decimal BindValue { get; set; } = 0M;
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public string DisplayFormat { get; set; } = "N2";
+    [Parameter]
+    public string ControlID { get; set; } = "inputDxSpinEdit";
+    [Parameter]
+    public string CssClass { get; set; } = "text-right";
+    [Parameter]
+    public string NullText { get; set; } = "0.00";
+    [Parameter]
+    public decimal MinValue { get; set; } = 0M;
+    [Parameter]
+    public decimal MaxValue { get; set; } = decimal.MaxValue;
+    [Parameter]
+    public decimal Increment { get; set; } = 1M;
+    [Parameter]
+    public bool ShowSpinButtons { get; set; } = true;
+    [Parameter]
+    public EventCallback<decimal> OnValueChanged { get; set; }
+
+    public string InputName { get; set; } = "inputDxSpinEdit";
+    Dictionary<string, object> dictAttributes;
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+    public void gmSetEnable(bool Enabled = true)
+    {
+        this.Enabled = Enabled;
+        StateHasChanged();
+    }
+    public void gmSetReadOnly(bool ReadOnly = false)
+    {
+        this.IsViewOnly = ReadOnly;
+        StateHasChanged();
+    }
+}

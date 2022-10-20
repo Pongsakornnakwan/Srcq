@@ -1,0 +1,77 @@
+﻿@using RichnessSoft.Entity.Model
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            Attributes="@dictAttributes"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+            SelectedItemChanged="@((Product p) => SelectedItemChanged(p,goData))"
+            ReadOnly="@IsViewOnly">
+    <DxListEditorColumn FieldName="code" Caption="@Lang.SysCode("รหัส","code")" Width="@DxGridHelper.Column.Width.Code" />
+    <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(Product.name1),nameof(Product.name2)))" Caption="@Lang.SysCode("ชื่อ","name1")" />
+    <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(Product.sname1),nameof(Product.sname2)))" Caption="@Lang.SysCode("ชื่อย่อ","Short-name1")" />
+@*    <DxListEditorColumn FieldName="exp_std_um_name" Caption="@Lang.SysCode("หน่วยนับ","Unit")" />
+    <DxListEditorColumn FieldName="stdPrice" Caption="@Lang.SysCode("ราคา","Price")" />*@
+</DxComboBox>
+@code {
+    [Parameter]
+    public Product BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public object goData { get; set; }
+    [Parameter]
+    public Action<Product, object> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(Product.name1), nameof(Product.name2));
+    [Parameter]
+    public string Active { get; set; } = ConstUtil.ACTIVE.YES;
+    [Parameter]
+    public string ProdTypeCode { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputOrderProd";
+    [Parameter]
+    public string NullText { get; set; } = "";
+
+
+    Dictionary<string, object> dictAttributes;
+    private IEnumerable<Product> liData;
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        gmSetDatasource();
+        await InvokeAsync(StateHasChanged);
+    }
+    private void gmSetDatasource()
+    {
+        gmReload(Active,ProdTypeCode);
+    }
+    public void gmReload(string pdTypeCode = "F")
+    {
+        gmReload(ConstUtil.ACTIVE.YES, pdTypeCode);
+    }
+    public void gmReload(string active = "Y", string pdTypeCode = "F")
+    {
+        Active = active;
+        ProdTypeCode = pdTypeCode;
+        liData = oQuery.LoadProductListData(Active, ProdTypeCode);
+        InvokeAsync(StateHasChanged);
+    }
+}

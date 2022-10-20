@@ -1,0 +1,120 @@
+﻿@using System.Globalization
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Entity.Context
+@using RichnessSoft.Service
+@using CurrieTechnologies.Razor.SweetAlert2
+@using RichnessSoft.Component.Shared
+@using Microsoft.EntityFrameworkCore
+
+@inject RicnessDbContext Db
+@inject QueryData oQuery
+@inject MsgUtil oMsg
+<!-- Modal VfieldLot -->
+<div d="@goModalID" class="modal fade show d-block" tabindex="-1" role="dialog">
+    <div class="modal-backdrop fade show" @onclick="@Cancel"></div>
+    <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable" style="z-index: 1050">
+        <!-- Pop it above the backdrop -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">@goModalTitle</h3>
+                <button type="button" class="close" aria-label="Close" @onclick="@Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        @if (this.liData is null)
+                        {
+                            <p><em>Loading...</em></p>
+                        }
+                        else
+                        {
+                            <DxDataGrid Id="gridDocRef"
+                                        Data="@liData"
+                                        ShowFilterRow="@pbShowFilterRow"
+                                        PageSize="10"
+                                        ShowPager="true"
+                                        ColumnResizeMode="DataGridColumnResizeMode.NextColumn"
+                                        SelectionMode="DevExpress.Blazor.DataGridSelectionMode.SingleSelectedDataRow"
+                                        AllowColumnDragDrop="false"
+                                        AllowSort="true"
+                                        AutoCollapseDetailRow="true"
+                                        T="ConstUtilBase.cLot"    
+                                        KeyFieldName="@nameof(ConstUtilBase.cLot.Id)"
+                                        DataNavigationMode="DataGridNavigationMode.Paging"
+                                        @bind-SingleSelectedDataRow="@SingleSelectedDataRow">
+                                <HeaderTemplate>
+                                    <DxToolbar ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+                                        <DxToolbarItem Tooltip="@Lang.SysCode("กรอง","Filter")" BeginGroup="true" GroupName="FilterRow" Click="@OnShowFilterRow" IconCssClass="grid-toolbar-filter-row" Alignment="ToolbarItemAlignment.Left" RenderStyle="ButtonRenderStyle.Primary" RenderStyleMode="ToolbarItemRenderStyleMode.Plain" />
+                                    </DxToolbar>
+                                </HeaderTemplate>
+                                <Columns>
+                                    <DxDataGridColumn Field="@nameof(ConstUtilBase.cLot.Lot)" Caption="@Lang.SysCode("ล๊อตสินค้า","lot")" />
+                                </Columns>
+                            </DxDataGrid>
+
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" name="btnAccrpt" class="btn btn-primary" @onclick="@SubmitForm">@(Lang.SysCode("ยืนยัน","ACCEPT"))</button>
+                <button type="button" name="btnCancel" class="btn btn-secondary" @onclick="@Cancel">@(Lang.SysCode("ยกเลิก","CANCEL"))</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal VfieldLot -->
+@code {
+
+    [Parameter]
+    public string goModalID { get; set; } = "iPopupLot";
+    [Parameter]
+    public string goModalTitle { get; set; } = "";
+    [Parameter]
+    public int CorpId { get; set; } = 0;
+    [Parameter]
+    public int branchid { get; set; } = 0;
+
+    private IEnumerable<ConstUtilBase.cLot> liData { get; set; } = Enumerable.Empty<ConstUtilBase.cLot>();
+    private bool pbShowFilterRow { get; set; } = false;
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+    public ConstUtilBase.cLot SingleSelectedDataRow { get; set; }
+
+    protected override void OnInitialized()
+    {
+        BlazoredModal?.SetTitle(this.goModalTitle);
+        this.GetLot();
+    }
+
+    #region Function
+    void GetLot()
+    {
+        this.liData = Db?.InvTrnD.AsNoTrackingWithIdentityResolution()?.Where(c => c.companyid == this.CorpId && c.branchid == this.branchid && (c.lot.Equals(null) == false && c.lot.Trim().Length > 0)).Select<InvTrnD,ConstUtilBase.cLot>(c=> new ConstUtilBase.cLot{ Id = c.id , Lot = c.lot}).Distinct<ConstUtilBase.cLot>().OrderBy(c=>c.Lot).ToList<ConstUtilBase.cLot>() ?? new List<ConstUtilBase.cLot>();
+    }
+    #endregion
+
+    #region Event
+    async Task Close()
+    {
+        this.SingleSelectedDataRow = null;
+        await BlazoredModal.CloseAsync(ModalResult.Ok<RcVfieldLot>(null));
+    }
+    async Task SubmitForm()
+    {
+        await BlazoredModal.CloseAsync(ModalResult.Ok<RcVfieldLot>(this));
+    }
+    async Task Cancel()
+    {
+        this.SingleSelectedDataRow = null;
+        await BlazoredModal.CancelAsync();
+    }
+    void OnShowFilterRow(ToolbarItemClickEventArgs e)
+    {
+        this.pbShowFilterRow = !this.pbShowFilterRow;
+        StateHasChanged();
+    }
+    #endregion
+}

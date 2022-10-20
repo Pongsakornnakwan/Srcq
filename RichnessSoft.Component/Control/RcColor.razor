@@ -1,0 +1,153 @@
+﻿@* Color : สี *@
+@* กรณีเพิ่ม Parameter ต้องกำหนด SetParametersAsync เสมอ มันเกี่ยวกับเรื่อง Performance *@
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Id="@ControlID"
+            InputId="@ControlID"
+            AllowUserInput="false"
+            NullText="@NullText"
+            Attributes="@dictAttributes"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(Colour.code)" Caption="@(Lang.SysCode("รหัส","code"))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(Colour.name1), nameof(Colour.name2)))" Caption="@(Lang.SysCode("ชื่อ","name1"))" VisibleIndex="1" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "cbxColor";
+    [Parameter]
+    public string BindValue { get; set; } = "";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<Colour> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string TextFieldName { get; set; } = nameof(Colour.ExpFullName);
+    [Parameter]
+    public string InputName { get; set; } = "inputColor";
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(Colour.id);
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    private IEnumerable<Colour> liData { get; set; } = Enumerable.Empty<Colour>();
+    private Dictionary<string, object> dictAttributes;
+    protected override void OnInitialized()
+    {
+        this.dictAttributes = new Dictionary<string, object>();
+        this.dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(ControlID):
+                    ControlID = (string)parameter.Value;
+                    break;
+                case nameof(BindValue):
+                    BindValue = (string)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<Colour>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ValueFieldName):
+                    ValueFieldName = (string)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    private void LoadDataSource()
+    {
+        this.liData = oQuery.LoadColorListData(ConstUtil.ACTIVE.YES) ?? Enumerable.Empty<Colour>();
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (this.dictAttributes is null)
+        {
+            this.dictAttributes = new Dictionary<string, object>();
+        }
+        if (this.dictAttributes is not null && key is not null && value is not null && this.dictAttributes.ContainsKey(key) == false)
+        {
+            this.dictAttributes.Add(key, value);
+        }
+    }
+
+    public int gmRowCount => liData?.Count() ?? 0;
+    public IEnumerable<Colour> gmGetAllRowData => this.liData;
+    public Colour gmGetRowData(int index = 0)
+    {
+        if (this.liData is null || this.gmRowCount <= index) { return null; }
+        return this.liData?.ElementAt(index) ?? null;
+    }
+    public Colour gmGetRowData(string strCode)
+    {
+        if (this.liData is null || UtilHelper.gmIsNullOrEmpty(strCode)) { return null; }
+        return this.liData?.Where(c => c.code == strCode)?.FirstOrDefault() ?? null;
+    }
+        public Colour gmGetRowDataByid(int Id)
+    {
+        if (this.liData is null || Id == 0) { return null; }
+        return this.liData?.Where(c => c.id == Id)?.FirstOrDefault() ?? null;
+    }
+}
+

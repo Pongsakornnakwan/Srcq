@@ -1,0 +1,58 @@
+﻿@using RichnessSoft.Entity.Class
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+<DxComboBox Data="@ConstUtil.goListProductSet"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Attributes="@dictAttributes"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            ReadOnly="@IsViewOnly">
+    @if(ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="code" Caption="@Lang.SysCode("รหัส","code")" Width="@DxGridHelper.Column.Width.Code" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(ConstUtil.cProductSet.name),nameof(ConstUtil.cProductSet.name2)))" Caption="@Lang.SysCode("ชื่อ","name1")" />
+    }  
+</DxComboBox>
+@code {
+    [Parameter]
+    public string BindValue { get; set; } = "";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<ConstUtil.cProductSet> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = nameof(ConstUtil.cProductSet.code);
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(ConstUtil.cProductSet.code);
+    [Parameter]
+    public string InputName { get; set; } = "inputOrderProductSet";
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    Dictionary<string, object> dictAttributes;
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,0 +1,173 @@
+﻿@page "/Database/VatType/{Module}/{ParrentMenu}/{ParrentId:int}/{MenuId:int}"
+
+@*<UIToolbar MenuName="@DataMenu.name"></UIToolbar>*@
+<div class="row g-5">
+    <div class="col-12">
+        <div class="card shadow rounded">
+            <div class="card-body">
+                @if (listDataGrid == null)
+                {
+                    <p><em>Loading...</em></p>
+                }
+                else
+                {
+                    <div class="demo-description demo-products">
+                        <div class="row mb-2"></div>
+                        <div class="row mb-3">
+                            <DxDataGrid Data="@listDataGrid"
+                                        ShowFilterRow="@ShowFilterRow"
+                                        PageSize="@DxGridHelper.Header.PageSize" ShowPager="true"
+                                        SelectionMode="DevExpress.Blazor.DataGridSelectionMode.None">
+                                <HeaderTemplate>
+                                    <DxToolbar ItemRenderStyleMode="ToolbarRenderStyleMode.Plain">
+                                        <DxToolbarItem Tooltip="@RinssSText.ButtonShowFilterRow" BeginGroup="true" GroupName="FilterRow" Click="@OnShowFilterRow" IconCssClass="grid-toolbar-filter-row" Alignment="ToolbarItemAlignment.Left" />
+                                        <DxToolbarItem Tooltip="@RinssSText.BUTTON_NEW" Click="@(() => cFuncNew())" IconCssClass="grid-toolbar-new" GroupName="AddRow" BeginGroup="true" Alignment="ToolbarItemAlignment.Right" />
+                                    </DxToolbar>
+                                </HeaderTemplate>
+                                <Columns>
+                                    <DxDataGridColumn Width="@DxGridHelper.Column.Width.Code" Field="@nameof(RichnessSoft.Entity.Model.VatType.Code)" Caption="@RinssSText.VATTYPE_CODE" SortIndex="0" SortOrder="DataGridColumnSortOrder.Ascending" />
+                                    <DxDataGridColumn Field="@nameof(RichnessSoft.Entity.Model.VatType.Name)" Caption="@RinssSText.VATTYPE_NAME" />
+                                    <DxDataGridColumn Field="@nameof(RichnessSoft.Entity.Model.VatType.Name2)" Caption="@RinssSText.VATTYPE_NAME_2" />
+                                    <DxDataGridColumn Field="@nameof(RichnessSoft.Entity.Model.VatType.Rate)" Caption="@RinssSText.VATTYPE_RATE" />
+                                    <DxDataGridColumn Field="@nameof(RichnessSoft.Entity.Model.VatType.Vat_Type)" Caption="@RinssSText.VATTYPE_TYPE">
+                                        <DisplayTemplate>
+                                            @{
+                                                @(ModelUtil.gmethDisplayVatType((context as RichnessSoft.Entity.Model.VatType).Vat_Type))
+                                            }
+                                        </DisplayTemplate>
+                                    </DxDataGridColumn>
+                                    <DxDataGridColumn Width="@DxGridHelper.Column.Width.Active" Field="@nameof(RichnessSoft.Entity.Model.VatType.Active)" Caption="@RinssSText.VATTYPE_ACTIVE">
+                                        <DisplayTemplate>
+                                            @{
+                                                @(ModelUtil.gmethDisplayActive((context as RichnessSoft.Entity.Model.VatType).Active))
+                                            }
+                                        </DisplayTemplate>
+                                    </DxDataGridColumn>
+                                    <DxDataGridColumn Width="@DxGridHelper.Column.Width.Inactive" Field="@nameof(RichnessSoft.Entity.Model.VatType.InactiveDate)" Caption="@RinssSText.VATTYPE_INACTIVE">
+                                        <DisplayTemplate>
+                                            @{
+                                                @(ModelUtil.gmethDisplayDate((context as VatType).InactiveDate))
+                                            }
+                                        </DisplayTemplate>
+                                    </DxDataGridColumn>
+                                    <DxDataGridColumn Width="@DxGridHelper.Column.Width.Tool" AllowFilter="false" AllowGroup="false" AllowSort="false">
+                                        <DisplayTemplate>
+                                            @{ var data = context as VatType;
+                                            <div class="d-flex flex-stack">
+                                                <button class="btn btn-sm" @onclick="@(() => Edit(data))"><i class="fa fa-edit"></i></button>
+                                                <button class="btn btn-sm" @onclick="@(() => Delete(data))"><i class="fa fa-trash"></i></button> 
+                                            </div> }
+                                        </DisplayTemplate>
+                                    </DxDataGridColumn>
+                                </Columns>
+                            </DxDataGrid>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" @onclick="@(() => { NavigationManager.NavigateTo($"Database/Account/{Module}/{ParrentMenu}/{ParrentId}"); })" style="margin-bottom:2rem;">@RinssSText.ButtonBackPage</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Module { get; set; }
+    [Parameter] public string ParrentMenu { get; set; }
+    [Parameter] public int ParrentId { get; set; }
+    [Parameter] public int MenuId { get; set; }
+
+
+    List<VatType> listDataGrid = new List<VatType>();
+    bool ShowFilterRow = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listDataGrid = Db.VatType.ToList();
+        if (listDataGrid.Count > 0)
+        {
+            listDataGrid.OrderBy(s => s.Code);
+        }
+        this.StateHasChanged();
+    }
+
+    void OnShowFilterRow(ToolbarItemClickEventArgs e)
+    {
+        ShowFilterRow = !ShowFilterRow;
+    }
+    void cFuncNew()
+    {
+        NavigationManager.NavigateTo($"Database/VatType/{0}");
+    }
+    void Edit(VatType data)
+    {
+        NavigationManager.NavigateTo($"Database/VatType/{data.Id}");
+    }
+    string ActiveDisplay(int nActive = 0)
+    {
+        string strRetValue = "";
+        switch (nActive)
+        {
+            case 0:
+                strRetValue = "No";
+                break;
+            case 1:
+                strRetValue = "Yes";
+                break;
+            default:
+                strRetValue = "";
+                break;
+        }
+        return strRetValue;
+    }
+
+    async void Delete(VatType data)
+    {
+        await Swal.FireAsync(new SweetAlertOptions
+        {
+            Title = "",
+            Text = RinssSText.CONFIRM_MSG_DEL,
+            Icon = SweetAlertIcon.Question,
+            ShowCancelButton = true,
+            ConfirmButtonText = RinssSText.CONFIRM_BUTTON_DEL,
+            CancelButtonText = RinssSText.CONFIRM_BUTTON_CANCEL
+        }).ContinueWith(swalTask =>
+        {
+            SweetAlertResult result = swalTask.Result;
+            if (!string.IsNullOrEmpty(result.Value))
+            {
+                ResultModel oResult = cFunc.Delete<VatType>(data);
+                if (oResult != null && oResult.Success)
+                {
+                    result = Swal.FireAsync("", RinssSText.CONFIRM_MSG_DEL_SUCCESS, SweetAlertIcon.Success).Result;
+                    if (!string.IsNullOrEmpty(result.Value))
+                    {
+                        Refresh();
+                    }
+                }
+                else
+                {
+                    Swal.FireAsync(
+                   "",
+                   RinssSText.CONFIRM_MSG_DEL_FAIL,
+                   SweetAlertIcon.Error
+                   );
+                }
+
+            }
+            else if (result.Dismiss == DismissReason.Cancel) { }
+        });
+    }
+
+    async void Refresh()
+    {
+        try
+        {
+            listDataGrid = Db.vattype.OrderBy(w => w.code).ToList();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception) { }
+    }
+
+}

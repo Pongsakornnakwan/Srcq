@@ -1,0 +1,62 @@
+﻿@using RichnessSoft.Component.Shared
+<DxDateEdit Id="@ControlID"
+            InputId="@ControlID"
+            @bind-Date="@BindValue"
+            SizeMode="@WebConstUtil.Control.goDateEditSize"
+            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+            T="DateTime?"
+            NullText="@NullText"
+            DisplayFormat="@DisplayFormat"
+            Format="@Format"
+            MinDate="@(MinDate.HasValue ? MinDate.Value : DateTime.MinValue )"
+            MaxDate="@(MaxDate.HasValue ? MaxDate.Value : DateTime.MaxValue )"
+            ReadOnly="@IsViewOnly"
+            Enabled="@Enabled">
+</DxDateEdit>
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "dteDateEditAutoBind";
+    [Parameter]
+    //public DateTime? BindValue { get; set; } = DateTime.Now.date;
+    public DateTime? BindValue
+    {
+        get => _tbDate;
+        set
+        {
+            if (_tbDate == value) return;
+
+            _tbDate = value;
+            OnDateChange.InvokeAsync(_tbDate);
+        }
+    }
+    private DateTime? _tbDate;
+
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public DateTime? MinDate { get; set; } = DateTime.MinValue;
+    [Parameter]
+    public DateTime? MaxDate { get; set; } = DateTime.MaxValue;
+    [Parameter]
+    public string DisplayFormat { get; set; } = "dd/MM/yyyy";
+    [Parameter]
+    public string Format { get; set; } = "dd/MM/yyyy";
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public EventCallback<DateTime?> OnDateChange { get; set; }
+
+    protected override void OnInitialized()
+    {
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

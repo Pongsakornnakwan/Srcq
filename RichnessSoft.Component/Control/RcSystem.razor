@@ -1,0 +1,158 @@
+﻿@using RichnessSoft.Entity.Class
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+<DxComboBox Id="@ControlID"
+            InputId="@ControlID"
+            Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            AllowUserInput="false"
+            NullText="@NullText"
+            Attributes="@dictAttributes"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(ConstUtilBase.cGLRefSystem.Code)" Caption="@(Lang.SysCode("รหัส","code"))" Width="@DxGridHelper.Column.Width.Code" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(ConstUtilBase.cGLRefSystem.Name), nameof(ConstUtilBase.cGLRefSystem.name2)))" Caption="@(Lang.SysCode("ชื่อ","name1"))" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "inputIDRefSystem";
+    [Parameter]
+    public string BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<ConstUtilBase.cGLRefSystem> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputNameRefSystem";
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(ConstUtilBase.cGLRefSystem.Name), nameof(ConstUtilBase.cGLRefSystem.name2));
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(ConstUtilBase.cGLRefSystem.Code);
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Never;
+    [Parameter]
+    public enumSystem SystemFix{ get; set; } = enumSystem.ALL;
+
+
+    Dictionary<string, object> dictAttributes;
+
+    public enum enumSystem { SALE = 0, PURCHASE = 1, ALL = 2 };
+    private IList<ConstUtilBase.cGLRefSystem> liData = new List<ConstUtilBase.cGLRefSystem>();
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataSource(); 
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(ControlID):
+                    ControlID = (string)parameter.Value;
+                    break;
+                case nameof(BindValue):
+                    BindValue = (string)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<ConstUtilBase.cGLRefSystem>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                case nameof(SystemFix):
+                    SystemFix = (enumSystem)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    async Task LoadDataSource()
+    {
+        switch (SystemFix)
+        {
+            case enumSystem.SALE:
+                this.liData = ConstUtil.goListSystem?.Where(c=>c.Code == ConstUtilBase.cSystem.SALE)?.ToList() ?? new List<ConstUtilBase.cGLRefSystem>();
+                break;
+            case enumSystem.PURCHASE:
+                this.liData = ConstUtil.goListSystem?.Where(c=>c.Code == ConstUtilBase.cSystem.PURCHASE)?.ToList() ?? new List<ConstUtilBase.cGLRefSystem>();
+                break;
+            case enumSystem.ALL:
+                this.liData = ConstUtil.goListSystem ?? new List<ConstUtilBase.cGLRefSystem>();
+                break;
+            default:
+                break;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (this.dictAttributes is null)
+        {
+            this.dictAttributes = new Dictionary<string, object>();
+        }
+        if (this.dictAttributes is not null && key is not null && value is not null && this.dictAttributes.ContainsKey(key) == false)
+        {
+            this.dictAttributes.Add(key, value);
+        }
+    }
+
+    public ConstUtilBase.cGLRefSystem gmGetDataRow(string strValue)
+    {
+        if (ConstUtil.goListSystem is null || ConstUtil.goListSystem.Count <= 0) { return null; }
+        return ConstUtil.goListSystem?.FirstOrDefault(c => c.Code == strValue) ?? null;
+    }
+}
+

@@ -1,0 +1,102 @@
+﻿@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            AllowUserInput="false"
+            Attributes="@dictAttributes"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"
+            SelectedItemChanged="@((Vendor e)=>SelectedItemChanged(e,goData))"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    <DxListEditorColumn FieldName="@nameof(Vendor.code)" Caption="@(Lang.SysCode("รหัส","code"))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+    <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(Vendor.sname1),nameof(Vendor.sname2)))" Caption="@(Lang.SysCode("ชื่อย่อ","Short-name1"))" VisibleIndex="1" />
+    <DxListEditorColumn FieldName="@nameof(Vendor.branchcode)" Caption="@(Lang.SysCode("สาขา","Branch No."))" Width="100px" VisibleIndex="2" />
+    <DxListEditorColumn FieldName="@nameof(Vendor.taxid)" Caption="@(Lang.SysCode("เลขที่ผู้เสียภาษี","Tax ID"))" Width="120px" VisibleIndex="3" />
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public Vendor BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<Vendor, object> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(Vendor.sname1), nameof(Vendor.sname2));
+    [Parameter]
+    public object goData { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputItemDocRefId";
+
+    private Dictionary<string, object> dictAttributes;
+    private IEnumerable<Vendor> liData = Enumerable.Empty<Vendor>();
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await GetDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async Task GetDataSource()
+    {
+        liData = oQuery.LoadVendorListData() ?? Enumerable.Empty<Vendor>();
+        await InvokeAsync(StateHasChanged);
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (dictAttributes is null)
+        {
+            dictAttributes = new Dictionary<string, object>();
+        }
+        if (dictAttributes is not null && key is not null && value is not null && dictAttributes.ContainsKey(key) == false)
+        {
+            dictAttributes.Add(key, value);
+        }
+    }
+    public void gmSetData(object oData)
+    {
+        this.goData = oData;
+    }
+    public void gmRefreshDataSource()
+    {
+        _ = GetDataSource();
+    }
+    public int gmRowCount => this.liData?.Count() ?? 0;
+    public Vendor gmGetRowData(int index = 0)
+    {
+        if (this.liData is null || gmRowCount <= index) { return null; }
+        return this.liData.ElementAt(index) ?? null;
+    }
+    public Vendor gmGetDataRow(string strValue)
+    {
+        if (this.liData is null || gmRowCount <= 0) { return null; }
+        return this.liData.FirstOrDefault(c => c.code == strValue) ?? null;
+    }
+    public Vendor gmGetRowDataById(int Id)
+    {
+        if (this.liData is null || this.liData.Count() == 0 || Id == 0) { return default; }
+        return this.liData?.Where(c => c.id == Id)?.FirstOrDefault() ?? default;
+    }
+}
+
+

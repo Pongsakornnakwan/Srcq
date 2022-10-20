@@ -1,0 +1,55 @@
+﻿@page "/Database/Um"
+@page "/Database/Um/{ParrentMenu}"
+@inherits razorBase
+
+<MudOverlay @bind-Visible="@_loaded" DarkBackground="true" ZIndex="9999" AutoClose="true" />
+<AppTitle Title="@Lng["PROD_GRID_UNIT_ADD_EDIT"]" Description="" />
+<MudPaper Elevation="20" Square="false">
+    <MudToolBar Dense="false" DisableGutters="true">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Variant="ThemeApp.goVariant" Color="MudBlazor.Color.Surface" ButtonType="ButtonType.Button" @onclick="(()=> NavigationManager.NavigateTo(backURL))" title="กลับ" Class="mr-1">@Lng["BACK"]</MudIconButton>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Outlined.Add" Variant="ThemeApp.goVariant" Color="MudBlazor.Color.Primary" ButtonType="ButtonType.Button" @onclick="(() => AddNewAsync())" title="@Lng["BUTTON_NEW"]" Class="mr-1">@Lng["BUTTON_NEW"]</MudIconButton>
+        <MudIconButton Icon="@Icons.Material.Outlined.Refresh" Variant="ThemeApp.goVariant" Color="MudBlazor.Color.Success" ButtonType="ButtonType.Button" @onclick="ReloadAsync" title="รีเฟรส" Class="mr-1">@Lng["REFRESH"]</MudIconButton>
+        @*<MudIconButton Icon="@Icons.Material.Outlined.ImportExport" Variant="ThemeApp.goVariant" Color="MudBlazor.Color.Surface" ButtonType="ButtonType.Button" @onclick="ExportToExcel" title="ส่งออก" Class="mr-1">ส่งออก</MudIconButton>*@
+    </MudToolBar>
+</MudPaper>
+
+<MudTable Virtualize="true" Hover="true" Loading="@_loaded" Elevation="25" Items="ListData" Dense="true" Bordered="false" Striped="false" Filter="new Func<UM, bool>(Search)" @bind-user="_Um">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudTextField @bind-Value="_searchString" Immediate="true" FullWidth=false Placeholder="@Lng["ButtonShowFilterRow"]" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="MudBlazor.Size.Medium" Class="mt-0 mb-3"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<UM, object>(x => x.code)">@Lng["UM_CODE"]</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<UM, object>(x => x.name1)">@Lng["UM_NAME"]</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<UM, object>(x => x.name2)">@Lng["UM_NAME_2"]</MudTableSortLabel></MudTh>
+        <MudTh Style="text-align:center;width:70px;">Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="@Lng["UM_CODE"]">
+            <MudHighlighter Text="@context.code" HighlightedText="@_searchString" />
+        </MudTd>
+        <MudTd DataLabel="@Lng["UM_NAME"]">
+            <MudHighlighter Text="@context.name1" HighlightedText="@_searchString" />
+        </MudTd>
+        <MudTd DataLabel="@Lng["UM_NAME_2"]">
+            <MudHighlighter Text="@context.name2" HighlightedText="@_searchString" />
+        </MudTd>
+        <MudTd DataLabel="Actions" Style="text-align:center">
+            <MudMenu Label="Actions" Variant="ThemeApp.goVariant" FullWidth="false" Icon="@Icons.Material.Outlined.Settings" Dense="true" DisableElevation="true" EndIcon="@Icons.Filled.KeyboardArrowDown" IconColor="MudBlazor.Color.Surface" Direction="Direction.Left" AnchorOrigin="Origin.TopLeft" OffsetX="true">
+                <MudMenuItem OnClick="(()=>EditUm(context.id))">
+                    <MudIcon Icon="@Icons.Material.Outlined.Edit" Color="MudBlazor.Color.Primary" Size="MudBlazor.Size.Small" Title="@Lng["EDIT"]"></MudIcon>
+                    @Lng["EDIT"]
+                </MudMenuItem>
+                <MudMenuItem OnClick="(()=>DeleteUm(context.id))">
+                    <MudIcon Icon="@Icons.Material.Outlined.Delete" Color="MudBlazor.Color.Error" Size="MudBlazor.Size.Small" Title="@Lng["CONFIRM_BUTTON_DEL"]"></MudIcon>
+                    @Lng["CONFIRM_BUTTON_DEL"]
+                </MudMenuItem>
+            </MudMenu>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+

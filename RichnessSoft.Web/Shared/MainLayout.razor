@@ -1,0 +1,67 @@
+﻿@inherits LayoutComponentBase
+@using RichnessSoft.Web.Pages.Login
+
+@inject IJSRuntime JS
+@inject NavigationManager MyNavigationManager
+
+<AuthorizeView>
+    <Authorized>
+
+        <!--begin::Root-->
+        <div class="d-flex flex-column flex-root">
+            <!--begin::Page-->
+            <div class="page d-flex flex-row flex-column-fluid">
+
+                <Aside></Aside>
+                <!--begin::Wrapper-->
+                <div class="wrapper d-flex flex-column flex-row-fluid" id="kt_wrapper">
+
+                    <Header></Header>
+                    <!--begin::Content-->
+                    <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+                        <!--begin::Post-->
+                        <div class="post d-flex flex-column-fluid" id="kt_post">
+
+                            <!--begin::Container-->
+                            <div id="kt_content_container" class="container-xxl">
+                                @Body
+                            </div>
+                            <!--end::Container-->
+                        </div>
+                        <!--end::Post-->
+                    </div>
+                    <!--end::Content-->
+                    <Footer></Footer>
+
+                </div>
+                <!--end::Wrapper-->
+            </div>
+            <!--end::Page-->
+        </div>
+        <!--end::Root-->
+    </Authorized>
+    <NotAuthorized>
+        <Login></Login>
+    </NotAuthorized>
+</AuthorizeView>
+@code {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeAsync<IJSObjectReference>("import", MyNavigationManager.ToAbsoluteUri("assets/plugins/global/plugins.bundle.js"));
+            await JS.InvokeAsync<IJSObjectReference>("import", MyNavigationManager.ToAbsoluteUri("assets/js/scripts.bundle.js"));
+            try
+            {
+                store.AddChangeListeners(() => { StateHasChanged(); });
+                string goCompany = await SessionStorage.GetItemAsync<string>("Company");
+                string  goUser = await SessionStorage.GetItemAsync<string>("Username");
+                store.SetState(goUser ,goCompany);
+            }
+            catch (Exception)
+            {
+            }
+        }
+    }
+}

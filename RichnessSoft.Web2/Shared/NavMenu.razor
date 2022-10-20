@@ -1,0 +1,46 @@
+﻿
+<MudNavMenu>
+    @*    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    <MudNavLink Href="counter" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Counter</MudNavLink>
+    <MudNavLink Href="fetchdata" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Fetch data</MudNavLink>*@
+    @if (_HeadMenu1 != null)
+    {
+        foreach (Menu h1 in _HeadMenu1)
+        {
+            <MudNavGroup Title="@h1.name1" Icon="@Icons.Filled.Settings" Expanded="false">
+                @foreach (Menu h2 in HeadMenu.Where(x => x.menutype.Equals(gbVar.gbTypeMenuHeader2) && x.parrentmenu.Equals(h1.code)))
+                {
+                    string url = $"SubMenu/{h2.code}";
+                    <MudNavLink Href="@url" ForceLoad="NavigationManager.Uri.Contains(url)" Match="NavLinkMatch.Prefix" Icon="@Icons.TwoTone.Redeem" IconColor="MudBlazor.Color.Primary">@h2.name1</MudNavLink>
+                }
+            </MudNavGroup>
+        }
+    }
+</MudNavMenu>
+
+
+@code {
+
+    List<Menu> _HeadMenu1 = new List<Menu>();
+    List<Menu> _HeadMenu2 = new List<Menu>();
+    List<Menu> HeadMenu = new List<Menu>();
+
+    protected override void OnInitialized()
+    {
+        HeadMenu = menuService.GetMenuHeader();
+        _HeadMenu1 = HeadMenu.Where(x => x.menutype.Equals(gbVar.gbTypeMenuHeader1)).ToList();
+        //_HeadMenu2 = HeadMenu.Where(x => x.menutype.Equals(gbVar.gbTypeMenuHeader2)).ToList();
+        StateHasChanged();
+    }
+
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+    //    if (firstRender)
+    //    {
+    //        //HeadMenu = await menuService.GetMenuHeaderAsync();
+    //        //_HeadMenu1 = HeadMenu.Where(x => x.menutype.Equals(gbVar.gbTypeMenuHeader1)).ToList();
+    //        //_HeadMenu2 = HeadMenu.Where(x => x.menutype.Equals(gbVar.gbTypeMenuHeader2)).ToList();
+    //    }
+    //    InvokeAsync(StateHasChanged);
+    //}
+}

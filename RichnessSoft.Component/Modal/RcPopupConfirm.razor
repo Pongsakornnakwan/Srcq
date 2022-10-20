@@ -1,0 +1,29 @@
+﻿@* Comfirm Modal *@
+
+<!-- Modal Comfirm -->
+<div d="@goModalID" class="modal fade show d-block" tabindex="-1" role="dialog">
+    <div class="modal-backdrop fade show" @onclick="@Cancel"></div>
+    <div class="modal-dialog modal-dialog-centered" style="z-index: 1050">
+        <!-- Pop it above the backdrop -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">@goModalTitle</h3>
+                <button type="button" class="close" aria-label="Close" @onclick="@Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="m-2"></div>
+                <div class="form-row form-group col-md-12">
+                    <div><b>@goModalText</b></div>
+                </div>
+                <div class="m-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" name="btnOK" class="btn btn-primary" @onclick="@SubmitForm">@goModalConfirmButtonText</button>
+                <button type="button" name="btnCancel" class="btn btn-danger" @onclick="@Cancel">@goModalCancelButtonText</button>
+            </div>
+        </div>
+    </div>
+</div>
+

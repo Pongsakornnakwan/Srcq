@@ -1,0 +1,60 @@
+﻿@using RichnessSoft.Component.Shared
+<DxSpinEdit Id="@ControlID"
+            InputId="@ControlID"
+            @bind-Value="@BindValue"
+            BindValueMode="BindValueMode.OnLostFocus"
+            ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"
+            Increment="@Increment"
+            MinValue="@MinValue"
+            MaxValue="@MaxValue"
+            ShowSpinButtons="@ShowSpinButtons"
+            SizeMode="@WebConstUtil.Control.goSpinEditSize"
+            T="decimal"
+            DisplayFormat="@DisplayFormat"
+            InputCssClass="@CssClass"
+            CssClass="@CssClass"
+            NullText="@NullText"
+            Attributes="@dictAttributes"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+</DxSpinEdit>
+
+@code {
+    [Parameter]
+    public decimal BindValue { get; set; } = 0M;
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public string DisplayFormat { get; set; } = "N2";
+    [Parameter]
+    public string ControlID { get; set; } = "inputDxSpinEditAutoBind";
+    [Parameter]
+    public string CssClass { get; set; } = "text-right";
+    [Parameter]
+    public string NullText { get; set; } = "0.00";
+    [Parameter]
+    public decimal MinValue { get; set; } = 0M;
+    [Parameter]
+    public decimal MaxValue { get; set; } = decimal.MaxValue;
+    [Parameter]
+    public decimal Increment { get; set; } = 1M;
+    [Parameter]
+    public bool ShowSpinButtons { get; set; } = true;
+
+    public string InputName { get; set; } = "inputDxSpinEditAutoBind";
+    Dictionary<string, object> dictAttributes;
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

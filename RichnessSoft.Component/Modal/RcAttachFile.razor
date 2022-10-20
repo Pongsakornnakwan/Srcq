@@ -1,0 +1,314 @@
+﻿@* AttachFile : แนบไฟล์ *@
+@using RichnessSoft.Entity.Class
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Common
+@using RichnessSoft.Component.Shared
+@using CurrieTechnologies.Razor.SweetAlert2
+@using RichnessSoft.Service
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Entity.Context
+@using System.IO
+@using BlazorInputFile;
+@using System.Linq
+@using Microsoft.EntityFrameworkCore
+
+@inject IJSRuntime JsRuntime
+@inject SweetAlertService Swal
+@inject RicnessDbContext Db
+@inject IFileUpload fileUpload
+<!-- Modal Attach File -->
+<div id="@goModalID" class="modal fade show d-block" tabindex="-1" role="dialog">
+    <div class="modal-backdrop fade show" @onclick="@Cancel"></div>
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="z-index: 1050">
+        <!-- Pop it above the backdrop -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">@goModalTitle</h3>
+                <button type="button" class="close" aria-label="Close" @onclick="@Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        @if(IsViewOnly == false)
+                        {
+                            <BlazorInputFile.InputFile OnChange="@HandleFileSelected" ></BlazorInputFile.InputFile>
+                        }
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        @if (goData is null)
+                        {
+                            <p><em>Loading...</em></p>
+                        }
+                        else
+                        {
+                            <DxDataGrid @ref="@goDxDataGrid"
+                                        Data="@goData"
+                                        ShowFilterRow="false"
+                                        PageSize="10"
+                                        ShowPager="true"
+                                        SelectionMode="DevExpress.Blazor.DataGridSelectionMode.None">
+                                <Columns>
+                                    <DxDataGridColumn Field="@nameof(ConstUtil.upload_files.SourceName)" Caption="@(Lang.SysCode("ไฟล์","source"))" />
+                                    <DxDataGridColumn Width="@DxGridHelper.Column.Width.Tool" AllowFilter="false" AllowGroup="false" AllowSort="false">
+                                        <DisplayTemplate Context="edit_attach_file_context">
+                                            @{
+                                                var data = edit_attach_file_context as ConstUtil.upload_files;
+                                                <button class="btn btn-sm" type="button" @onclick="@(() => cFuncViewAttachFile(data))"><i class="fas fa-search-location"></i></button>
+                                                <button class="btn btn-sm" type="button" @onclick="@(() => cFuncDeleteAttachFile(data))"><i class="fa fa-trash"></i></button>
+                                            }
+                                        </DisplayTemplate>
+                                    </DxDataGridColumn>
+                                </Columns>
+                            </DxDataGrid>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @if(IsViewOnly)      
+                {
+                    <button type="submit" class="btn btn-primary" disabled="disabled" @onclick="SubmitForm">@Lang.SysCode("ยืนยัน", "ACCEPT")</button>
+                }
+                else
+                {
+                    <button type="submit" class="btn btn-primary" @onclick="SubmitForm">@Lang.SysCode("ยืนยัน", "ACCEPT")</button>
+                }
+                <button type="button" class="btn btn-danger" @onclick="@Cancel">@(Lang.SysCode("ยกเลิก","CANCEL"))</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Attach File -->
+
+@code {
+    [Parameter]
+    public string goModalID { get; set; } = "modalAttachFile";
+    [Parameter]
+    public string goModalTitle { get; set; } = "";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public FileUpload.ActionType goFileUploadActionType { get; set; } = FileUpload.ActionType.QUOATATION;
+    [Parameter]
+    public string gstrDocumentLinkID { get; set; } = "";
+    [Parameter]
+    public string gstrDocumentCode { get; set; } = "";
+    [Parameter]
+    public List<ConstUtil.upload_files> goData { get; set; } = new List<ConstUtil.upload_files>();
+    [Parameter]
+    public List<ConstUtil.upload_files> liAttachFileDeleted { get; set; } = new List<ConstUtil.upload_files>();
+
+    private DxDataGrid<ConstUtil.upload_files> goDxDataGrid;
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    protected override void OnInitialized()
+    {
+        this.BlazoredModal?.SetTitle(this.goModalTitle);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        this.gmBindingData();
+        await InvokeAsync(StateHasChanged);
+    }
+    #region Function
+    async Task gmFocusFirtEditor()
+    {
+        var oResult = await JsRuntime.InvokeAsync<string>("jsfunction.focusEditor", "mybutton-ok");
+        if (oResult is not null) { }
+    }
+    async Task gmGridRefresh()
+    {
+        if (this.goDxDataGrid is not null)
+        {
+            await this.goDxDataGrid.Refresh();
+        }
+    }
+    void GetDataAttachFile()
+    {
+        List<StorageImage> aResult = null;
+        switch (this.goFileUploadActionType)
+        {
+            case FileUpload.ActionType.PRODUCT:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.PRODUCT).OrderBy(ps => ps.seq).ToList();
+                break;
+            case FileUpload.ActionType.VENDOR:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.VENDOR).OrderBy(ps => ps.seq).ToList();
+                break;
+            case FileUpload.ActionType.CUSTOMER:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.CUSTOMER).OrderBy(ps => ps.seq).ToList();
+                break;
+            case FileUpload.ActionType.SALE_PERSON:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.SALE_PERSON).OrderBy(ps => ps.seq).ToList();
+                break;
+            case FileUpload.ActionType.QUOATATION:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.QUOATATION).OrderBy(ps => ps.seq).ToList();
+                break;
+            case FileUpload.ActionType.SALE_ORDER:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.SALEORDER).OrderBy(ps => ps.seq).ToList();
+                break;
+            case FileUpload.ActionType.INVOICE:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.INVOICE).OrderBy(ps => ps.seq).ToList();
+                break;
+            case FileUpload.ActionType.BILL:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.BILL).OrderBy(ps => ps.seq).ToList();
+                break;
+            case FileUpload.ActionType.PRE_RECEIPT:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.PRE_RECEIPT).OrderBy(ps => ps.seq).ToList();
+                break;
+            case FileUpload.ActionType.RECEIPT:
+                aResult = Db.StorageImage.AsNoTrackingWithIdentityResolution().Where(ps => ps.refdocid == gstrDocumentLinkID && ps.sourceimage == ConstUtil.SOURCEIMAGE.RECEIPT).OrderBy(ps => ps.seq).ToList();
+                break;
+            default:
+                aResult = new List<StorageImage>();
+                break;
+        }
+        if (this.goData is null)
+        {
+            this.goData = new List<ConstUtilBase.upload_files>();
+        }
+        if (aResult is not null && aResult.Count > 0)
+        {
+            foreach (var row in aResult)
+            {
+                //string strAttachPath = path.GetFullPath(path.Combine(GetDirectorySourceImage(),row.source));
+                //MemoryStream memory = new MemoryStream();
+                //FileStream fs = new FileStream(strAttachPath, FileAccess.ReadWrite);
+                //fs.CopyTo(memory);
+                //goData.Add(new ConstUtilBase.upload_files() { FileListEntry = null, SourceName = row.source, StorageImageData = row , memoryStream =  memory});
+                bool bExitst = (this.goData?.Where(c=>c.SourceName == row.source)?.FirstOrDefault() ?? null) != null;
+                if (bExitst == false)
+                {
+                    this.goData.Add(new ConstUtilBase.upload_files() { FileListEntry = null, SourceName = row.source, StorageImageData = row , memoryStream =  null});
+                }
+            }
+        }
+    }
+    void gmBindingData()
+    {
+        this.GetDataAttachFile();
+    }
+    #endregion
+
+    #region Event
+    async Task cFuncViewAttachFile(ConstUtil.upload_files upload_Files)
+    {
+        StorageImage data = null;
+        string strFileName = string.Empty;
+        if (upload_Files is null) { return; }
+        data = upload_Files.StorageImageData as StorageImage;
+        if (data is not null)
+        {
+            if (UtilHelper.gmIsNullOrEmpty(data.source) == false)
+            {
+                strFileName = Path.Combine(fileUpload.gmDirectoryUpload(this.goFileUploadActionType),data.source);
+            }
+        }
+        else
+        {
+            string strDirectoryTemp = Path.Combine(gbVar.WebRootPath, "TempFile");
+            if (Directory.Exists(strDirectoryTemp) == false)
+            {
+                Directory.CreateDirectory(strDirectoryTemp);
+            }
+            string fileTempName = upload_Files?.FileListEntry?.Name ?? "";
+            string filePath = Path.Combine(strDirectoryTemp, fileTempName);
+            if (File.Exists(filePath) && IOUtil.FileIsLocked(filePath) == false)
+            {
+                IOUtil.DeleteFile(filePath);
+            }
+            if (upload_Files is not null)
+            {
+                if (IOUtil.WriteFile(await upload_Files.FileListEntry.ReadAllAsync(), filePath))
+                {
+                    strFileName = filePath;
+                }
+            }
+        }
+        if (File.Exists(strFileName))
+        {
+            try
+            {
+                System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo();
+                info.FileName = strFileName;
+                info.UseShellExecute = true;
+                await Task.FromResult(System.Diagnostics.Process.Start(info));
+            }
+            catch (Exception) { }
+        }
+    }
+    async Task<ResultModel> cFuncDeleteAttachFile(ConstUtil.upload_files data)
+    {
+        ResultModel oResult = new ResultModel { Data = null, Message = "", Success = true };
+        if (this.IsViewOnly) { return oResult; }
+        else if (data is null) { return oResult; }
+        await Swal.FireAsync(new SweetAlertOptions
+        {
+            Title = "",
+            Text = Lang.SysCode("ต้องการลบข้อมูล ใช่หรือไม่ ?", "Do you want to delete ?"),
+            Icon = SweetAlertIcon.Question,
+            ShowCancelButton = true,
+            ConfirmButtonText = Lang.SysCode("ลบ", "Delete"),
+            CancelButtonText = Lang.SysCode("ยกเลิก", "Cancel")
+        }).ContinueWith(swalTask =>
+        {
+            SweetAlertResult result = swalTask.Result;
+            if (!string.IsNullOrEmpty(result.Value))
+            {
+                if (data.FileListEntry is not null)
+                {
+                    string strDirectoryTemp = Path.Combine(gbVar.WebRootPath, "TempFile");
+                    string fileTempName = data?.FileListEntry?.Name ?? "";
+                    string filePath = Path.Combine(strDirectoryTemp, fileTempName);
+                    if (IOUtil.FileExist(filePath) && IOUtil.FileIsLocked(filePath) == false)
+                    {
+                        IOUtil.DeleteFile(filePath);
+                    }
+                }
+                if (data is not null && this.liAttachFileDeleted.Contains(data) == false)
+                {
+                    this.liAttachFileDeleted.Add(data);
+                }
+                if (data is not null && this.goData.Contains(data))
+                {
+                    this.goData.Remove(data);
+                }
+                Swal.FireAsync("", Lang.SysCode("ลบข้อมูลเรียบร้อย", "Deleted Successfully."), SweetAlertIcon.Success);
+            }
+            else if (result.Dismiss == DismissReason.Cancel) { }
+        });
+        await this.gmGridRefresh();
+        return oResult;
+    }
+    async Task HandleFileSelected(IFileListEntry[] files)
+    {
+        if (this.IsViewOnly) { return; }
+        else if (this.goData is null || this.goData.Count > 5) { return; }
+        else if (files is null || files.Length == 0) { return; }
+        IFileListEntry file = files.FirstOrDefault();
+        if (file is not null)
+        {
+            string strSourceName = file.Name;
+            System.IO.FileInfo finfo = new System.IO.FileInfo(file.Name);
+            int nCount = this.goData.Count + 1;
+            strSourceName = string.Concat(this.gstrDocumentCode, "-", nCount.ToString("000"), finfo.Extension);
+            MemoryStream stream = new MemoryStream();
+            await file.Data.CopyToAsync(stream);
+            this.goData.Add(new ConstUtil.upload_files() { FileListEntry = file, SourceName = strSourceName, StorageImageData = null, memoryStream = stream });
+        }
+        await this.goDxDataGrid?.Refresh();
+        await InvokeAsync(StateHasChanged);
+    }
+    async Task Close() => await BlazoredModal.CloseAsync(ModalResult.Ok<RcAttachFile>(null));
+    async Task SubmitForm()
+    {
+        await BlazoredModal.CloseAsync(ModalResult.Ok<RcAttachFile>(this));
+    }
+    async Task Cancel() => await BlazoredModal.CancelAsync();
+    #endregion    
+}

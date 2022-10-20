@@ -1,0 +1,167 @@
+﻿@* BRANCH : สาขา *@
+@* กรณีเพิ่ม Parameter ต้องกำหนด SetParametersAsync เสมอ มันเกี่ยวกับเรื่อง Performance *@
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+<DxComboBox Id="@ControlID"
+            InputId="@ControlID"
+            Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            ValueFieldName="@ValueFieldName"
+            @bind-Value="@BindValue"
+            Attributes="@dictAttributes"
+            AllowUserInput="false"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@SelectedItemChanged"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(Branch.code)" Caption="@(Lang.SysCode("รหัส","code"))" Width="@DxGridHelper.Column.Width.Code" />
+        <DxListEditorColumn FieldName="@nameof(Branch.name1)" Caption="@(Lang.SysCode("รหัส","name1"))" />
+    }
+</DxComboBox>
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "cbxBranch";
+    [Parameter]
+    public string BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<Branch> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = nameof(Branch.ExpFullName); //Lang.SysCode(nameof(Branch.name1), nameof(Branch.name2));
+    [Parameter]
+    public string ValueFieldName { get; set; } = nameof(Branch.id);
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputBranch";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+    [Parameter]
+    public int companyid { get; set; } = 0;
+
+    Dictionary<string, object> dictAttributes;
+    private IEnumerable<Branch> liData { get; set; } = Enumerable.Empty<Branch>();
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        this.LoadDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(ControlID):
+                    ControlID = (string)parameter.Value;
+                    break;
+                case nameof(BindValue):
+                    BindValue = (string)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<Branch>)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ValueFieldName):
+                    ValueFieldName = (string)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                case nameof(companyid):
+                    companyid = (int)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    private void LoadDataSource()
+    {
+        if (UtilHelper.gmIsNullOrEmpty(this.companyid) == false)
+        {
+            this.liData = oQuery.LoadBranchListData(this.companyid) ?? Enumerable.Empty<Branch>();
+        }
+        else
+        {
+            this.liData = oQuery.LoadBranchListData() ?? Enumerable.Empty<Branch>();
+        }
+    }
+    public void gmReload()
+    {
+        this.gmReload(this.companyid);
+    }
+    public void gmReload(int companyid = default)
+    {
+        this.companyid = companyid;
+        this.LoadDataSource();
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (dictAttributes is not null && key is not null && value is not null && dictAttributes.ContainsKey(key) == false)
+        {
+            dictAttributes.Add(key, value);
+        }
+    }
+    public int gmRowCount => liData?.Count() ?? 0;
+    public Branch gmGetRowData(int index = 0)
+    {
+        if (liData is null || liData.Count() <= index) { return null; }
+        return liData.ElementAt(index) ?? null;
+    }
+    public Branch gmGetRowData(string strCode)
+    {
+        if (liData is null || liData.Count() == 0) { return null; }
+        return liData.Where(c => c.code == strCode)?.FirstOrDefault() ?? null;
+    }
+    public Branch gmGetRowDataById(int branchid)
+    {
+        if (liData is null || liData.Count() == 0) { return null; }
+        return liData.Where(c => c.id == branchid)?.FirstOrDefault() ?? null;
+    }
+    public IEnumerable<Branch> gmGetAllRowData => this.liData;
+}

@@ -1,0 +1,258 @@
+﻿<div>
+    <MudTextField @ref="RefTextField"
+                  Variant="ThemeApp.goVariant"
+                  Label="@Lng["SO_BOOK"]"
+                  @bind-Value="SearchText"
+                  Placeholder="@Lng["ButtonShowFilterRow"]"
+                  @onclick="@(()=>OnClickTextField())"
+                  @onkeydown="OnKeyDown"
+                  Adornment="Adornment.End"
+                  AdornmentIcon="@Icons.Filled.Search"
+                  AdornmentColor="MudBlazor.Color.Primary"
+                  Margin="ThemeApp.goMargin"
+                  Clearable="true" Immediate="true" />
+    <MudPopover Open="@_isOpen"
+                MaxHeight="300"
+                AnchorOrigin="@Origin.BottomCenter"
+                TransformOrigin="@Origin.TopCenter"
+                RelativeWidth="true">
+        <MudTable @ref="mudTable" Items="@_ListData" Hover="true" LoadingProgressColor="MudBlazor.Color.Info"
+                  Style="overflow-x: auto;" Dense="true" RowClassFunc="@SelectedRowClassFunc" OnRowClick="RowClickEvent" T="Book"
+                  Filter="new Func<Book, bool>(SearchFillter)">
+            <ToolBarContent>
+                <MudSpacer />
+                @if (BlankOk)
+                {
+                    <MudButton OnClick="ClearValue">Clear</MudButton>
+                }
+                <MudButton OnClick="ClosePopup">Close</MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>@Lng["BOOK_CODE"]</MudTh>
+                <MudTh>@Lng["BOOK_NAME"]</MudTh>
+                <MudTh>@Lng["BOOK_NAME_2"]</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@Lng["BOOK_CODE"]">
+                    <MudHighlighter Text="@context.code" HighlightedText="@_searchText" />
+                </MudTd>
+                <MudTd DataLabel="@Lng["BOOK_NAME"]">
+                    <MudHighlighter Text="@context.name1" HighlightedText="@_searchText" />
+                </MudTd>
+                <MudTd DataLabel="@Lng["BOOK_NAME_2"]">
+                    <MudHighlighter Text="@context.name2" HighlightedText="@_searchText" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPopover>
+</div>
+
+@code {
+
+    [Parameter]
+    public EventCallback<Book> OnSelectionChange { get; set; }
+    [Parameter]
+    public bool BlankOk { get; set; } = false;
+    [Parameter]
+    public int BindValue { get; set; } = 0;
+    [Parameter]
+    public List<Book> ItemList { get; set; } = new List<Book>();
+    [Parameter]
+    public int BranchId { get; set; } = 0;
+    [Parameter]
+    public string DocType { get; set; } = "";
+
+
+    private bool _isOpen;
+    private string _searchText = "";
+    List<Book> ListData = new List<Book>();
+    List<Book> _ListData = new List<Book>();
+    private MudTable<Book> mudTable;
+    private MudTextField<string> RefTextField;
+    private int selectedRowNBookber = -1;
+
+    void ClosePopup() => _isOpen = false;
+    public int gmRowCount => _ListData?.Count() ?? 0;
+    public Book gmGetRowData(int index = 0)
+    {
+        if (_ListData is null || _ListData.Count() <= index) { return null; }
+        _searchText = _ListData.ElementAt(index).ExpFullName;
+        this.StateHasChanged();
+        return _ListData.ElementAt(index) ?? null;
+    }
+
+
+    async void OnClickTextField()
+    {
+        _isOpen = true;
+        RefTextField.SelectAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (_searchText == value)
+                return;
+            _searchText = value;
+            _ListData = ListData.Where(x => x.code.Contains(_searchText ?? "")
+            || x.name1.Contains(_searchText ?? "")
+            || (x.name2 ?? "").Contains(_searchText ?? "")).ToList();
+
+            _isOpen = true;
+            StateHasChanged();
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        this.LoadDataSource(store.companyid, BranchId, DocType);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    { }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(OnSelectionChange):
+                    OnSelectionChange = (EventCallback<Book>)parameter.Value;
+                    break;
+                case nameof(BlankOk):
+                    BlankOk = (bool)parameter.Value;
+                    break;
+                case nameof(BindValue):
+                    BindValue = (int)parameter.Value;
+                    break;
+                case nameof(ItemList):
+                    ItemList = (List<Book>)parameter.Value;
+                    break;
+                case nameof(BranchId):
+                    BranchId = (int)parameter.Value;
+                    break;
+                case nameof(DocType):
+                    DocType = (string)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    public async void LoadDataSource(List<Book> data)
+    {
+        ListData = data;
+        _ListData = data;
+    }
+
+    public async void LoadDataSource(int CorpId , int BranchId , string DocType)
+    {
+        if (ItemList.Count > 0)
+        {
+            ListData = ItemList;
+            _ListData = ItemList;
+
+        }
+        else
+        {
+            ListData = bookService.GetAll(CorpId, BranchId, DocType);
+            _ListData = ListData;
+            if (ListData != null && ListData.Count > 0)
+                _searchText = ListData[0].ExpFullName;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (BindValue > 0)
+            {
+                var SeleVal = _ListData.Where(x => x.id == BindValue).FirstOrDefault();
+                if (SeleVal != null)
+                {
+                    _searchText = SeleVal.ExpFullName;
+                    await OnSelectionChange.InvokeAsync(SeleVal);
+                }
+            }
+            else
+            {
+                if (BlankOk == false && _ListData.Count > 0)
+                {
+                    _searchText = _ListData[0].ExpFullName;
+                    await OnSelectionChange.InvokeAsync(_ListData[0]);
+                }
+            }
+            StateHasChanged();
+        }
+    }
+
+    async void ClearValue()
+    {
+        await OnSelectionChange.InvokeAsync(new Book());
+        _searchText = "";
+        _isOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            _isOpen = false;
+        if (args.Key == "Escape")
+            _isOpen = false;
+    }
+
+    async void RowClickEvent(TableRowClickEventArgs<Book> tableRowClickEventArgs)
+    {
+        _searchText = tableRowClickEventArgs.Item.ExpFullName;
+        await OnSelectionChange.InvokeAsync(tableRowClickEventArgs.Item);
+        _isOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private string SelectedRowClassFunc(Book element, int rowNBookber)
+    {
+        if (selectedRowNBookber == rowNBookber)
+        {
+            selectedRowNBookber = -1;
+            return string.Empty;
+        }
+        else if (mudTable.SelectedItem != null && mudTable.SelectedItem.Equals(element))
+        {
+            selectedRowNBookber = rowNBookber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    private bool SearchFillter(Book Book)
+    {
+        if (string.IsNullOrWhiteSpace(_searchText)) return true;
+        if (Book.code?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        if (Book.name1?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        if (Book.name2?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        return false;
+    }
+}

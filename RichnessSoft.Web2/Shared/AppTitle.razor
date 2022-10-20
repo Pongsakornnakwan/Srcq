@@ -1,0 +1,10 @@
+﻿@*@namespace BlazorStore.Client.Shared*@
+
+<MudText Typo="Typo.h5" Color="MudBlazor.Color.Primary" Class="mb-2">@Title</MudText>
+<MudText Color="MudBlazor.Color.Surface" Class="mb-4">@Description</MudText>
+
+@code
+{
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Description { get; set; }
+}

@@ -1,0 +1,150 @@
+﻿@* Customer(Item) : ลูกค้า *@
+@* กรณีเพิ่ม Parameter ต้องกำหนด SetParametersAsync เสมอ มันเกี่ยวกับเรื่อง Performance *@
+@using RichnessSoft.Entity.Model
+@using RichnessSoft.Service
+@using RichnessSoft.Component.Shared
+@inject QueryData oQuery
+
+<DxComboBox Data="@liData"
+            ListRenderMode="ListRenderMode.Virtual"
+            FilteringMode="DataGridFilteringMode.Contains"
+            TextFieldName="@TextFieldName"
+            @bind-Value="@BindValue"
+            AllowUserInput="false"
+            Attributes="@dictAttributes"
+            NullText="@NullText"
+            SizeMode="@WebConstUtil.Control.goComboboxSize"
+            DropDownWidthMode="DropDownWidthMode.ContentOrEditorWidth"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            SelectedItemChanged="@((Customer e)=>SelectedItemChanged(e,goData))"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly">
+    @if (ShowMultiColumn)
+    {
+        <DxListEditorColumn FieldName="@nameof(Customer.code)" Caption="@(Lang.SysCode("รหัส","code"))" Width="@DxGridHelper.Column.Width.Code" VisibleIndex="0" />
+        <DxListEditorColumn FieldName="@(Lang.SysCode(nameof(Customer.sname1),nameof(Customer.sname2)))" Caption="@(Lang.SysCode("ชื่อย่อ","Short-name1"))" VisibleIndex="1" />
+        <DxListEditorColumn FieldName="@nameof(Customer.branchcode)" Caption="@(Lang.SysCode("สาขา","Branch No."))" Width="100px" VisibleIndex="2" />
+        <DxListEditorColumn FieldName="@nameof(Customer.taxid)" Caption="@(Lang.SysCode("เลขที่ผู้เสียภาษี","Tax ID"))" Width="120px" VisibleIndex="3" />
+    }
+</DxComboBox>
+
+@code {
+    [Parameter]
+    public Customer BindValue { get; set; }
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public Action<Customer, object> SelectedItemChanged { get; set; }
+    [Parameter]
+    public string TextFieldName { get; set; } = Lang.SysCode(nameof(Customer.sname1), nameof(Customer.sname2));
+    [Parameter]
+    public object goData { get; set; }
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public string InputName { get; set; } = "inputItemDocRefId";
+    [Parameter]
+    public bool ShowMultiColumn { get; set; } = true;
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DevExpress.Blazor.DataEditorClearButtonDisplayMode.Auto;
+
+    private Dictionary<string, object> dictAttributes;
+    private IEnumerable<Customer> liData = Enumerable.Empty<Customer>();
+
+    protected override void OnInitialized()
+    {
+        dictAttributes = new Dictionary<string, object>();
+        dictAttributes.Add("name1", InputName);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        this.GetDataSource();
+        await InvokeAsync(StateHasChanged);
+    }
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(BindValue):
+                    BindValue = (Customer)parameter.Value;
+                    break;
+                case nameof(IsViewOnly):
+                    IsViewOnly = (bool)parameter.Value;
+                    break;
+                case nameof(Enabled):
+                    Enabled = (bool)parameter.Value;
+                    break;
+                case nameof(ChildContent):
+                    ChildContent = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(SelectedItemChanged):
+                    SelectedItemChanged = (Action<Customer, object>)parameter.Value;
+                    break;
+                case nameof(NullText):
+                    NullText = (string)parameter.Value;
+                    break;
+                case nameof(InputName):
+                    InputName = (string)parameter.Value;
+                    break;
+                case nameof(goData):
+                    goData = (object)parameter.Value;
+                    break;
+                case nameof(TextFieldName):
+                    TextFieldName = (string)parameter.Value;
+                    break;
+                case nameof(ShowMultiColumn):
+                    ShowMultiColumn = (bool)parameter.Value;
+                    break;
+                case nameof(ClearButtonDisplayMode):
+                    ClearButtonDisplayMode = (DevExpress.Blazor.DataEditorClearButtonDisplayMode)parameter.Value;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown parameter: {parameter.Name}");
+            }
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    private void GetDataSource()
+    {
+        liData = oQuery.LoadCustomerListData() ?? Enumerable.Empty<Customer>();
+    }
+    public void gmSetAttributes(string key, object value)
+    {
+        if (dictAttributes is not null && key is not null && value is not null && dictAttributes.ContainsKey(key) == false)
+        {
+            dictAttributes.Add(key, value);
+        }
+    }
+    public void gmSetData(object oData)
+    {
+        this.goData = oData;
+    }
+    public void gmRefresh()
+    {
+        this.GetDataSource();
+    }
+    public int gmRowCount => this.liData?.Count() ?? 0;
+    public Customer gmGetRowData(int index = 0)
+    {
+        if (this.liData is null || this.liData.Count() <= index) { return null; }
+        return this.liData.ElementAt(index) ?? null;
+    }
+    public Customer gmGetRowData(string strCode)
+    {
+        if (this.liData is null || this.liData.Count() == 0) { return null; }
+        return this.liData.Where(c => c.code == strCode)?.FirstOrDefault() ?? null;
+    }
+    public Customer gmGetRowDataById(int Id)
+    {
+        if (this.liData is null || this.liData.Count() == 0 || Id == 0) { return default; }
+        return this.liData?.Where(c => c.id == Id)?.FirstOrDefault() ?? default;
+    }
+}
+

@@ -1,0 +1,28 @@
+﻿@*gmIsDigit : function in file _Host.cshtml*@
+<input type="text" id="@InputID" name="@InputName" value="@BindValue" placeholder="@Placeholder" readonly="@IsViewOnly" class="form-control form-control-sm text-right" onkeypress="return gmIsDigit(event,this.value);" @onchange="@ChangeEventArgs" autocomplete="off" />
+
+@code {
+    [Parameter]
+    public string BindValue { get; set; } = "0.00";
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public string InputID { get; set; } = "inputNumberic";
+    [Parameter]
+    public string InputName { get; set; } = "inputNumberic";
+    [Parameter]
+    public string Placeholder { get; set; } = "";
+    [Parameter]
+    public EventCallback<ChangeEventArgs> ChangeEventArgs { get; set; }
+
+    protected override void OnInitialized()
+    {
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

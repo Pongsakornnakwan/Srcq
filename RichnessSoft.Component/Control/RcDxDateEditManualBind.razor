@@ -1,0 +1,74 @@
+﻿@using RichnessSoft.Component.Shared
+<DxDateEdit Id="@ControlID"
+            InputId="@ControlID"
+            Date="@BindValue"
+            SizeMode="@WebConstUtil.Control.goDateEditSize"
+            ClearButtonDisplayMode="@ClearButtonDisplayMode"
+            T="DateTime?"
+            NullText="@NullText"
+            DisplayFormat="@DisplayFormat"
+            Format="@Format"
+            MinDate="@(MinDate.HasValue ? MinDate.Value : DateTime.MinValue )"
+            MaxDate="@(MaxDate.HasValue ? MaxDate.Value : DateTime.MaxValue )"
+            Enabled="@Enabled"
+            ReadOnly="@IsViewOnly"
+            DateExpression="@(()=>BindValue)"
+            DateChanged="@DateChanged">
+</DxDateEdit>
+
+@code {
+    [Parameter]
+    public string ControlID { get; set; } = "dteDateEdit";
+    [Parameter]
+    public DateTime? BindValue { get; set; } = DateTime.Now.Date;
+    [Parameter]
+    public bool IsViewOnly { get; set; } = false;
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    [Parameter]
+    public EventCallback<DateTime?> DateChanged { get; set; }
+    [Parameter]
+    public DateTime? MinDate { get; set; } = DateTime.MinValue;
+    [Parameter]
+    public DateTime? MaxDate { get; set; } = DateTime.MaxValue;
+    [Parameter]
+    public string DisplayFormat { get; set; } = "dd/MM/yyyy";
+    [Parameter]
+    public string Format { get; set; } = "dd/MM/yyyy";
+    [Parameter]
+    public string NullText { get; set; } = "";
+    [Parameter]
+    public object goData { get; set; }
+    [Parameter]
+    public DevExpress.Blazor.DataEditorClearButtonDisplayMode ClearButtonDisplayMode { get; set; } = DataEditorClearButtonDisplayMode.Never;
+
+    protected override void OnInitialized()
+    {
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void gmSetData(object oData)
+    {
+        this.goData = oData;
+    }
+    public void gmSetBinding(DateTime? dte)
+    {
+        this.BindValue = dte;
+    }
+    public void gmSetEnable(bool Enabled = true)
+    {
+        this.Enabled = Enabled;
+        StateHasChanged();
+    }
+    public void gmSetReadOnly(bool ReadOnly = false)
+    {
+        this.IsViewOnly = ReadOnly;
+        StateHasChanged();
+    }
+}
