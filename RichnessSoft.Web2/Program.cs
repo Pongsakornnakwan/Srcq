@@ -56,6 +56,8 @@ builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IPdGroupService, PdGroupService>();
 builder.Services.AddScoped<IColorService, ColorService>();
+builder.Services.AddScoped<IDesignService, DesignService>();
+builder.Services.AddScoped<IGradeService, GradeService>();
 
 builder.Services.AddCors(options =>
 {

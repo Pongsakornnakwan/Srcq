@@ -4,7 +4,7 @@ using MudBlazor;
 using RichnessSoft.Common;
 using RichnessSoft.Entity.Model;
 
-namespace RichnessSoft.Web2.Pages.Databases.Colorx
+namespace RichnessSoft.Web2.Pages.Databases.Products
 {
     public partial class ColorsEdit
     {
@@ -17,7 +17,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Colorx
         string backURL = "";
         string Mode { get; set; }
 
-        Colour Col { get; set; }
+        Colour colors { get; set; }
         MudDatePicker _picker;
 
         private FluentValidationValidator _fluentValidationValidator;
@@ -30,14 +30,14 @@ namespace RichnessSoft.Web2.Pages.Databases.Colorx
             {
                 Mode = gbVar.ModeEdit;
                 var r = colorService.GetById(Id);
-                Col = (Colour)r.Data;
+                colors = (Colour)r.Data;
             }
             else
             {
                 Mode = gbVar.ModeInsert;
-                Col = new Colour();
-                Col.companyid = store.CurentCompany.id;
-                Col.active = ConstUtil.ACTIVE.YES;
+                colors = new Colour();
+                colors.companyid = store.CurentCompany.id;
+                colors.active = ConstUtil.ACTIVE.YES;
             }
         }
         async void SaveAsync()
@@ -52,11 +52,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Colorx
                 {
                     if (Mode == gbVar.ModeInsert)
                     {
-                        results = colorService.Add(Col);
+                        results = colorService.Add(colors);
                     }
                     else if (Mode == gbVar.ModeEdit)
                     {
-                        results = colorService.Edit(Col);
+                        results = colorService.Edit(colors);
                     }
                     _loaded = false;
                     if (results.Success)
@@ -64,7 +64,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Colorx
                         await Dialog.ShowMessageBox("info", Lng["SAVE_MSG_SUCCESS"], "OK");
                         if (Mode == gbVar.ModeInsert)
                         {
-                            Col = new Colour();
+                            colors = new Colour();
                         }
                         else
                         {
@@ -88,7 +88,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Colorx
         private bool CheckDupCode()
         {
             bool bSucc = true;
-            var res = colorService.GetByCode(Col.companyid, Col.code);
+            var res = colorService.GetByCode(colors.companyid, colors.code);
             if (res.Data != null && !string.IsNullOrEmpty(((Colour)res.Data)?.code))
             {
                 Colour OldData = (Colour)res.Data;
@@ -96,7 +96,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Colorx
                 {
                     bSucc = false;
                 }
-                else if (Mode == gbVar.ModeEdit && OldData.id != Col.id)
+                else if (Mode == gbVar.ModeEdit && OldData.id != colors.id)
                 {
                     bSucc = false;
                 }
@@ -112,7 +112,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Colorx
             var sss = values.ToArray();
             if (sss[0] == ConstUtil.ACTIVE.YES)
             {
-                Col.inactivedate = null;
+                colors.inactivedate = null;
                 _picker.Clear();
             }
             StateHasChanged();

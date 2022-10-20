@@ -1,0 +1,52 @@
+﻿@page "/Database/ColorsEdit/{Id:int}/{ParrentMenu}"
+@inherits razorBase
+<MudOverlay @bind-Visible="@_loaded" DarkBackground="true" ZIndex="9999" AutoClose="true" />
+<AppTitle Title="@Lng["TITLE_COLOR"]" Description="" />
+<MudPaper MaxWidth="MaxWidth.Small" Class="d-flex justify-center flex-grow-1 gap-4" Elevation="0">
+    <MudGrid Spacing="0" Class="d-flex justify-center flex-grow-1 gap-4">
+        <MudItem xs="12" sm="5">
+            <MudPaper Class="pa-4">
+                <EditForm Model="@colors" OnValidSubmit="SaveAsync">
+
+                    <FluentValidationValidator @ref="_fluentValidationValidator" />
+
+                    <MudGrid>
+                        <MudItem xs="12" sm="12">
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@colors.code" T="string" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_CODE"]" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12">
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@colors.name1" T="string" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_NAME"]" Required="true" RequiredError="@(Lng["COLOR_NAME"] + "is required!")" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12">
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@colors.name2" T="string" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_NAME_2"]" Required="false" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect Margin="ThemeApp.goMargin" @bind-Value="@colors.active" Variant="ThemeApp.goVariant" T="string" Label="@Lng["COLOR_STATUS"]" AnchorOrigin="Origin.BottomCenter" SelectedValuesChanged="activeChange">
+                                @foreach (var item in ConstUtil.goListActive)
+                                {
+                                    <MudSelectItem T="string" Value="@item.code">@item.name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudDatePicker Margin="ThemeApp.goMargin" @ref="_picker" @bind-Value="@colors.inactivedate" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_ACTIVE"]"
+                                           AutoClose="true"
+                                           DateFormat="dd/MM/yyyy"
+                                           TitleDateFormat="dd/MM/yyyy"
+                                           Rounded="true"
+                                           ReadOnly="@(colors.active == ConstUtil.ACTIVE.YES)"
+                                           AllowKeyboardInput="false" />
+                        </MudItem>
+                        <MudItem xs="12" Style="color:red;">
+                            <ValidationSummary></ValidationSummary>
+                        </MudItem>
+                    </MudGrid>
+                </EditForm>
+            </MudPaper>
+            <MudPaper Class="pa-4 mt-4">
+                <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" DisableElevation="true" OnClick="@SaveAsync">@Lng["BUTTON_SAVE"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Secondary" DisableElevation="true" OnClick="@(()=> NavigationManager.NavigateTo(backURL))" Class="mx-2">@Lng["CONFIRM_BUTTON_CANCEL"]</MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudPaper>

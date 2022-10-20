@@ -4,7 +4,7 @@ using MudBlazor;
 using RichnessSoft.Entity.Model;
 
 
-namespace RichnessSoft.Web2.Pages.Databases.Colorx
+namespace RichnessSoft.Web2.Pages.Databases.Products
 {
     public partial class Colors
     {
@@ -69,8 +69,8 @@ namespace RichnessSoft.Web2.Pages.Databases.Colorx
             {
                 _loaded = true;
                 var r = colorService.GetById(id);
-                Colour col = (Colour)r.Data;
-                var res = colorService.Delete(col);
+                Colour colors = (Colour)r.Data;
+                var res = colorService.Delete(colors);
                 if (res.Success)
                 {
                     await Dialog.ShowMessageBox("info", Lng["CONFIRM_MSG_DEL_SUCCESS"], "OK");
@@ -86,18 +86,18 @@ namespace RichnessSoft.Web2.Pages.Databases.Colorx
             }
         }
 
-        private bool Search(Colour col)
+        private bool Search(Colour colors)
         {
             if (string.IsNullOrWhiteSpace(_searchString)) return true;
-            if (col.code?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            if (colors.code?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }
-            if (col.name1?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            if (colors.name1?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }
-            if (col.name2?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            if (colors.name2?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }

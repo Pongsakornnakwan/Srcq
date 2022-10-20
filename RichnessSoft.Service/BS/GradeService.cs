@@ -7,10 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static log4net.Appender.ColoredConsoleAppender;
 
 namespace RichnessSoft.Service.BS
 {
-    public interface IColorService
+    public interface IGradeService
     {
         ResultModel GetAll(int CorpId);
         Task<ResultModel> GetAllAsync(int CorpId);
@@ -18,33 +19,32 @@ namespace RichnessSoft.Service.BS
         ResultModel GetById(int Id);
         ResultModel GetByCode(int CorpId, string Code);
         ResultModel GetByName(int CorpId, string Name);
-        ResultModel Add(Colour um);
-        ResultModel Edit(Colour um);
-        ResultModel Delete(Colour um);
+        ResultModel Add(Grade um);
+        ResultModel Edit(Grade um);
+        ResultModel Delete(Grade um);
     }
-    public class ColorService : BaseService, IColorService
+    public class GradeService : BaseService, IGradeService
     {
         private readonly RicnessDbContext _db;
         private readonly ProfileStore _store;
-        public ColorService(RicnessDbContext db, ProfileStore store)
+        public GradeService(RicnessDbContext db, ProfileStore store)
         {
             _db = db;
             _store = store;
         }
-
-        public ResultModel Add(Colour colors)
+        public ResultModel Add(Grade grd)
         {
             ResultModel res = new ResultModel();
             try
             {
                 using (var db = new RicnessDbContext())
                 {
-                    colors.createby = _store.CurrentUser.username;
-                    colors.createatutc = DateTime.Now;
-                    colors.companyid = _store.CurentCompany.id;
-                    db.Add(colors);
+                    grd.createby = _store.CurrentUser.username;
+                    grd.createatutc = DateTime.Now;
+                    grd.companyid = _store.CurentCompany.id;
+                    db.Add(grd);
                     db.SaveChanges();
-                    AddLog<Colour>(colors);
+                    AddLog<Grade>(grd);
                     res.Success = true;
                 }
             }
@@ -56,45 +56,17 @@ namespace RichnessSoft.Service.BS
             return res;
         }
 
-        public ResultModel Delete(Colour colors)
-        {
-            {
-                ResultModel res = new ResultModel();
-                try
-                {
-                    using (var db = new RicnessDbContext())
-                    {
-                        var data = db.Color.Where(x => x.id == colors.id).FirstOrDefault();
-                        db.Color.Remove(data);
-                        DeleteLog<Colour>(data);
-                        db.SaveChanges();
-                        res.Success = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    res.Success = false;
-                    res.Message = ex.Message.ToString();
-                }
-                return res;
-            }
-        }
-
-        public ResultModel Edit(Colour colors)
+        public ResultModel Delete(Grade grd)
         {
             ResultModel res = new ResultModel();
             try
             {
                 using (var db = new RicnessDbContext())
                 {
-                    var Olddata = db.Color.Where(x => x.id == colors.id).FirstOrDefault();
-                    colors.updateby = _store.CurrentUser.username;
-                    colors.companyid = _store.CurentCompany.id;
-                    colors.updateatutc = DateTime.Now;
-                    db.Color.Update(colors);
+                    var data = db.Grade.Where(x => x.id == grd.id).FirstOrDefault();
+                    db.Grade.Remove(data);
+                    DeleteLog<Grade>(data);
                     db.SaveChanges();
-                    _db.Entry(colors).State = EntityState.Detached;
-                    UpdateLog<Colour>(Olddata, colors);
                     res.Success = true;
                 }
             }
@@ -106,39 +78,64 @@ namespace RichnessSoft.Service.BS
             return res;
         }
 
+        public ResultModel Edit(Grade grd)
+        {
+            ResultModel res = new ResultModel();
+            try
+            {
+                using (var db = new RicnessDbContext())
+                {
+                    var Olddata = db.Grade.Where(x => x.id == grd.id).FirstOrDefault();
+                    grd.updateby = _store.CurrentUser.username;
+                    grd.companyid = _store.CurentCompany.id;
+                    grd.updateatutc = DateTime.Now;
+                    db.Grade.Update(grd);
+                    db.SaveChanges();
+                    _db.Entry(grd).State = EntityState.Detached;
+                    UpdateLog<Grade>(Olddata, grd);
+                    res.Success = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                res.Success = false;
+                res.Message = ex.Message.ToString();
+            }
+            return res;
+        }
 
         public ResultModel GetAll(int CorpId)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.companyid == CorpId).ToList();
+            res.Data = _db.Grade.Where(x => x.companyid == CorpId).ToList();
             return res;
         }
 
         public async Task<ResultModel> GetAllAsync(int CorpId)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.companyid == CorpId).ToList();
+            res.Data = _db.Grade.Where(x => x.companyid == CorpId).ToList();
             return res;
         }
 
         public ResultModel GetByCode(int CorpId, string Code)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.companyid == CorpId && x.code.Equals(Code)).FirstOrDefault();
+            res.Data = _db.Grade.Where(x => x.companyid == CorpId && x.code.Equals(Code)).FirstOrDefault();
             return res;
         }
 
         public ResultModel GetById(int Id)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.id == Id).FirstOrDefault();
+            res.Data = _db.Grade.Where(x => x.id == Id).FirstOrDefault();
             return res;
         }
 
         public ResultModel GetByName(int CorpId, string Name)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.companyid == CorpId && x.code.Contains(Name)).ToList();
+            res.Data = _db.Grade.Where(x => x.companyid == CorpId && x.code.Contains(Name)).ToList();
             return res;
         }
     }
