@@ -6,7 +6,7 @@ using RichnessSoft.Entity.Model;
 
 namespace RichnessSoft.Web2.Pages.Databases.Products
 {
-    public partial class ColorsEdit
+    public partial class SaleAreaEdit
     {
         [Parameter]
         public int Id { get; set; }
@@ -17,27 +17,26 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         string backURL = "";
         string Mode { get; set; }
 
-        Colour colors { get; set; }
+        SaleArea saleArea { get; set; }
         MudDatePicker _picker;
-
         private FluentValidationValidator _fluentValidationValidator;
         private bool Validated => _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
 
         protected override async Task OnInitializedAsync()
         {
-            backURL = "/Database/Warehouse/" + ParrentMenu;
+            backURL = "/Database/Territory/" + ParrentMenu;
             if (Id > 0)
             {
                 Mode = gbVar.ModeEdit;
-                var r = colorService.GetById(Id);
-                colors = (Colour)r.Data;
+                var r = saleAreaService.GetById(Id);
+                saleArea = (SaleArea)r.Data;
             }
             else
             {
                 Mode = gbVar.ModeInsert;
-                colors = new Colour();
-                colors.companyid = store.CurentCompany.id;
-                colors.active = ConstUtil.ACTIVE.YES;
+                saleArea = new SaleArea();
+                saleArea.companyid = store.CurentCompany.id;
+                saleArea.active = ConstUtil.ACTIVE.YES;
             }
         }
         async void SaveAsync()
@@ -52,11 +51,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                 {
                     if (Mode == gbVar.ModeInsert)
                     {
-                        results = colorService.Add(colors);
+                        results = saleAreaService.Add(saleArea);
                     }
                     else if (Mode == gbVar.ModeEdit)
                     {
-                        results = colorService.Edit(colors);
+                        results = saleAreaService.Edit(saleArea);
                     }
                     _loaded = false;
                     if (results.Success)
@@ -64,11 +63,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                         await Dialog.ShowMessageBox("info", Lng["SAVE_MSG_SUCCESS"], "OK");
                         if (Mode == gbVar.ModeInsert)
                         {
-                            colors = new Colour();
+                            saleArea = new SaleArea();
                         }
                         else
                         {
-                            NavigationManager.NavigateTo($"/Database/Color/{ParrentMenu}");
+                            NavigationManager.NavigateTo($"/Database/Territory/{ParrentMenu}");
                         }
                     }
                     else
@@ -88,15 +87,15 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         private bool CheckDupCode()
         {
             bool bSucc = true;
-            var res = colorService.GetByCode(colors.companyid, colors.code);
-            if (res.Data != null && !string.IsNullOrEmpty(((Colour)res.Data)?.code))
+            var res = saleAreaService.GetByCode(saleArea.companyid, saleArea.code);
+            if (res.Data != null && !string.IsNullOrEmpty(((SaleArea)res.Data)?.code))
             {
-                Colour OldData = (Colour)res.Data;
+                SaleArea OldData = (SaleArea)res.Data;
                 if (Mode == gbVar.ModeInsert)
                 {
                     bSucc = false;
                 }
-                else if (Mode == gbVar.ModeEdit && OldData.id != colors.id)
+                else if (Mode == gbVar.ModeEdit && OldData.id != saleArea.id)
                 {
                     bSucc = false;
                 }
@@ -112,7 +111,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             var sss = values.ToArray();
             if (sss[0] == ConstUtil.ACTIVE.YES)
             {
-                colors.inactivedate = null;
+                saleArea.inactivedate = null;
                 _picker.Clear();
             }
             StateHasChanged();

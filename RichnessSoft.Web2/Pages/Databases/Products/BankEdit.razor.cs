@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using RichnessSoft.Common;
 using RichnessSoft.Entity.Model;
+using static RichnessSoft.Common.GbDocRefType;
 
 namespace RichnessSoft.Web2.Pages.Databases.Products
 {
-    public partial class ColorsEdit
+    public partial class BankEdit
     {
         [Parameter]
         public int Id { get; set; }
@@ -17,7 +18,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         string backURL = "";
         string Mode { get; set; }
 
-        Colour colors { get; set; }
+        Bank bank { get; set; }
         MudDatePicker _picker;
 
         private FluentValidationValidator _fluentValidationValidator;
@@ -25,19 +26,19 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
 
         protected override async Task OnInitializedAsync()
         {
-            backURL = "/Database/Warehouse/" + ParrentMenu;
+            backURL = "/Database/Bank/" + ParrentMenu;
             if (Id > 0)
             {
                 Mode = gbVar.ModeEdit;
                 var r = colorService.GetById(Id);
-                colors = (Colour)r.Data;
+                bank = (Bank)r.Data;
             }
             else
             {
                 Mode = gbVar.ModeInsert;
-                colors = new Colour();
-                colors.companyid = store.CurentCompany.id;
-                colors.active = ConstUtil.ACTIVE.YES;
+                bank = new Bank();
+                bank.companyid = store.CurentCompany.id;
+                bank.active = ConstUtil.ACTIVE.YES;
             }
         }
         async void SaveAsync()
@@ -52,11 +53,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                 {
                     if (Mode == gbVar.ModeInsert)
                     {
-                        results = colorService.Add(colors);
+                        results = bankService.Add(bank);
                     }
                     else if (Mode == gbVar.ModeEdit)
                     {
-                        results = colorService.Edit(colors);
+                        results = bankService.Edit(bank);
                     }
                     _loaded = false;
                     if (results.Success)
@@ -64,11 +65,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                         await Dialog.ShowMessageBox("info", Lng["SAVE_MSG_SUCCESS"], "OK");
                         if (Mode == gbVar.ModeInsert)
                         {
-                            colors = new Colour();
+                            bank = new Bank();
                         }
                         else
                         {
-                            NavigationManager.NavigateTo($"/Database/Color/{ParrentMenu}");
+                            NavigationManager.NavigateTo($"/Database/Bank/{ParrentMenu}");
                         }
                     }
                     else
@@ -88,15 +89,15 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         private bool CheckDupCode()
         {
             bool bSucc = true;
-            var res = colorService.GetByCode(colors.companyid, colors.code);
-            if (res.Data != null && !string.IsNullOrEmpty(((Colour)res.Data)?.code))
+            var res = bankService.GetByCode(bank.companyid, bank.code);
+            if (res.Data != null && !string.IsNullOrEmpty(((Bank)res.Data)?.code))
             {
-                Colour OldData = (Colour)res.Data;
+                Bank OldData = (Bank)res.Data;
                 if (Mode == gbVar.ModeInsert)
                 {
                     bSucc = false;
                 }
-                else if (Mode == gbVar.ModeEdit && OldData.id != colors.id)
+                else if (Mode == gbVar.ModeEdit && OldData.id != bank.id)
                 {
                     bSucc = false;
                 }
@@ -112,7 +113,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             var sss = values.ToArray();
             if (sss[0] == ConstUtil.ACTIVE.YES)
             {
-                colors.inactivedate = null;
+                bank.inactivedate = null;
                 _picker.Clear();
             }
             StateHasChanged();

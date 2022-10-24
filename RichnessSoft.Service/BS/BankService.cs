@@ -9,10 +9,12 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static log4net.Appender.ColoredConsoleAppender;
+using static RichnessSoft.Common.GbDocRefType;
 
 namespace RichnessSoft.Service.BS
 {
-    public interface IColorService
+    public interface IBankService
     {
         ResultModel GetAll(int CorpId);
         Task<ResultModel> GetAllAsync(int CorpId);
@@ -20,33 +22,33 @@ namespace RichnessSoft.Service.BS
         ResultModel GetById(int Id);
         ResultModel GetByCode(int CorpId, string Code);
         ResultModel GetByName(int CorpId, string Name);
-        ResultModel Add(Colour um);
-        ResultModel Edit(Colour um);
-        ResultModel Delete(Colour um);
+        ResultModel Add(Bank um);
+        ResultModel Edit(Bank um);
+        ResultModel Delete(Bank um);
     }
-    public class ColorService : BaseService, IColorService
+    public class BankService : BaseService, IBankService
     {
         private readonly RicnessDbContext _db;
         private readonly ProfileStore _store;
-        public ColorService(RicnessDbContext db, ProfileStore store)
+        public BankService(RicnessDbContext db, ProfileStore store)
         {
             _db = db;
             _store = store;
         }
 
-        public ResultModel Add(Colour colors)
+        public ResultModel Add(Bank bank)
         {
             ResultModel res = new ResultModel();
             try
             {
                 using (var db = new RicnessDbContext())
                 {
-                    colors.createby = _store.CurrentUser.username;
-                    colors.createatutc = DateTime.Now;
-                    colors.companyid = _store.CurentCompany.id;
-                    db.Add(colors);
+                    bank.createby = _store.CurrentUser.username;
+                    bank.createatutc = DateTime.Now;
+                    bank.companyid = _store.CurentCompany.id;
+                    db.Add(bank);
                     db.SaveChanges();
-                    AddLog<Colour>(colors);
+                    AddLog<Bank>(bank);
                     res.Success = true;
                 }
             }
@@ -58,7 +60,7 @@ namespace RichnessSoft.Service.BS
             return res;
         }
 
-        public ResultModel Delete(Colour colors)
+        public ResultModel Delete(Bank bank)
         {
             {
                 ResultModel res = new ResultModel();
@@ -66,9 +68,9 @@ namespace RichnessSoft.Service.BS
                 {
                     using (var db = new RicnessDbContext())
                     {
-                        var data = db.Color.Where(x => x.id == colors.id).FirstOrDefault();
-                        db.Color.Remove(data);
-                        DeleteLog<Colour>(data);
+                        var data = db.Bank.Where(x => x.id == bank.id).FirstOrDefault();
+                        db.Bank.Remove(data);
+                        DeleteLog<Bank>(data);
                         db.SaveChanges();
                         res.Success = true;
                     }
@@ -82,21 +84,21 @@ namespace RichnessSoft.Service.BS
             }
         }
 
-        public ResultModel Edit(Colour colors)
+        public ResultModel Edit(Bank bank)
         {
             ResultModel res = new ResultModel();
             try
             {
                 using (var db = new RicnessDbContext())
                 {
-                    var Olddata = db.Color.Where(x => x.id == colors.id).FirstOrDefault();
-                    colors.updateby = _store.CurrentUser.username;
-                    colors.companyid = _store.CurentCompany.id;
-                    colors.updateatutc = DateTime.Now;
-                    db.Color.Update(colors);
+                    var Olddata = db.Bank.Where(x => x.id == bank.id).FirstOrDefault();
+                    bank.updateby = _store.CurrentUser.username;
+                    bank.companyid = _store.CurentCompany.id;
+                    bank.updateatutc = DateTime.Now;
+                    db.Bank.Update(bank);
                     db.SaveChanges();
-                    _db.Entry(colors).State = EntityState.Detached;
-                    UpdateLog<Colour>(Olddata, colors);
+                    _db.Entry(bank).State = EntityState.Detached;
+                    UpdateLog<Bank>(Olddata, bank);
                     res.Success = true;
                 }
             }
@@ -108,43 +110,42 @@ namespace RichnessSoft.Service.BS
             return res;
         }
 
-
         public ResultModel GetAll(int CorpId)
         {
             return GetAll(CorpId, ConstUtil.ACTIVE.YES);
         }
-        public ResultModel GetAll(int CorpId,string strActive = ConstUtil.ACTIVE.YES)
+        public ResultModel GetAll(int CorpId, string strActive = ConstUtil.ACTIVE.YES)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.companyid == CorpId && (x.active.Equals(strActive) || x.inactivedate >=DateTime.Now.Date )).ToList();
+            res.Data = _db.Bank.Where(x => x.companyid == CorpId && (x.active.Equals(strActive) || x.inactivedate >= DateTime.Now.Date)).ToList();
             return res;
         }
 
         public async Task<ResultModel> GetAllAsync(int CorpId)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.companyid == CorpId).ToList();
+            res.Data = _db.Bank.Where(x => x.companyid == CorpId).ToList();
             return res;
         }
 
         public ResultModel GetByCode(int CorpId, string Code)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.companyid == CorpId && x.code.Equals(Code)).FirstOrDefault();
+            res.Data = _db.Bank.Where(x => x.companyid == CorpId && x.code.Equals(Code)).FirstOrDefault();
             return res;
         }
 
         public ResultModel GetById(int Id)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.id == Id).FirstOrDefault();
+            res.Data = _db.Bank.Where(x => x.id == Id).FirstOrDefault();
             return res;
         }
 
         public ResultModel GetByName(int CorpId, string Name)
         {
             ResultModel res = new ResultModel();
-            res.Data = _db.Color.Where(x => x.companyid == CorpId && x.code.Contains(Name)).ToList();
+            res.Data = _db.Bank.Where(x => x.companyid == CorpId && x.code.Contains(Name)).ToList();
             return res;
         }
     }

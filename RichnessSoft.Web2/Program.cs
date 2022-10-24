@@ -58,6 +58,11 @@ builder.Services.AddScoped<IPdGroupService, PdGroupService>();
 builder.Services.AddScoped<IColorService, ColorService>();
 builder.Services.AddScoped<IDesignService, DesignService>();
 builder.Services.AddScoped<IGradeService, GradeService>();
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+builder.Services.AddScoped<ICustGroupsService, CustGroupService>();
+builder.Services.AddScoped<ISaleAreaService, SaleAreaService>();
+builder.Services.AddScoped<IBankService, BankService>();
+
 
 builder.Services.AddCors(options =>
 {

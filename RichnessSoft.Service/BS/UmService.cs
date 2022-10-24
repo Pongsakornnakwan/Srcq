@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
 using EntityState = Microsoft.EntityFrameworkCore.EntityState;
+using RichnessSoft.Common;
 
 namespace RichnessSoft.Service.BS
 {
@@ -110,8 +111,12 @@ namespace RichnessSoft.Service.BS
 
         public ResultModel GetAll(int CorpId)
         {
+            return GetAll(CorpId, ConstUtil.ACTIVE.YES);
+        }
+        public ResultModel GetAll(int CorpId, string strActive = ConstUtil.ACTIVE.YES)
+        {
             ResultModel res = new ResultModel();
-            res.Data = _db.UM.Where(x => x.companyid == CorpId).ToList();
+            res.Data = _db.UM.Where(x => x.companyid == CorpId && (x.active.Equals(strActive) || x.inactivedate >= DateTime.Now.Date)).ToList();
             return res;
         }
 

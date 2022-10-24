@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using RichnessSoft.Common;
 using RichnessSoft.Entity.Model;
+using static log4net.Appender.ColoredConsoleAppender;
 
 namespace RichnessSoft.Web2.Pages.Databases.Products
 {
-    public partial class ColorsEdit
+    public partial class WarehouseEdit
     {
         [Parameter]
         public int Id { get; set; }
@@ -17,7 +18,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         string backURL = "";
         string Mode { get; set; }
 
-        Colour colors { get; set; }
+        Warehouse warehouse { get; set; }
         MudDatePicker _picker;
 
         private FluentValidationValidator _fluentValidationValidator;
@@ -25,19 +26,19 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
 
         protected override async Task OnInitializedAsync()
         {
-            backURL = "/Database/Warehouse/" + ParrentMenu;
+            backURL = "/Database/Whouse/" + ParrentMenu;
             if (Id > 0)
             {
                 Mode = gbVar.ModeEdit;
-                var r = colorService.GetById(Id);
-                colors = (Colour)r.Data;
+                var r = warehouseService.GetById(Id);
+                warehouse = (Warehouse)r.Data;
             }
             else
             {
                 Mode = gbVar.ModeInsert;
-                colors = new Colour();
-                colors.companyid = store.CurentCompany.id;
-                colors.active = ConstUtil.ACTIVE.YES;
+                warehouse = new Warehouse();
+                warehouse.companyid = store.CurentCompany.id;
+                warehouse.active = ConstUtil.ACTIVE.YES;
             }
         }
         async void SaveAsync()
@@ -52,11 +53,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                 {
                     if (Mode == gbVar.ModeInsert)
                     {
-                        results = colorService.Add(colors);
+                        results = warehouseService.Add(warehouse);
                     }
                     else if (Mode == gbVar.ModeEdit)
                     {
-                        results = colorService.Edit(colors);
+                        results = warehouseService.Edit(warehouse);
                     }
                     _loaded = false;
                     if (results.Success)
@@ -64,11 +65,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                         await Dialog.ShowMessageBox("info", Lng["SAVE_MSG_SUCCESS"], "OK");
                         if (Mode == gbVar.ModeInsert)
                         {
-                            colors = new Colour();
+                            warehouse = new Warehouse();
                         }
                         else
                         {
-                            NavigationManager.NavigateTo($"/Database/Color/{ParrentMenu}");
+                            NavigationManager.NavigateTo($"/Database/Whouse/{ParrentMenu}");
                         }
                     }
                     else
@@ -88,15 +89,15 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         private bool CheckDupCode()
         {
             bool bSucc = true;
-            var res = colorService.GetByCode(colors.companyid, colors.code);
-            if (res.Data != null && !string.IsNullOrEmpty(((Colour)res.Data)?.code))
+            var res = warehouseService.GetByCode(warehouse.companyid, warehouse.code);
+            if (res.Data != null && !string.IsNullOrEmpty(((Warehouse)res.Data)?.code))
             {
-                Colour OldData = (Colour)res.Data;
+                Warehouse OldData = (Warehouse)res.Data;
                 if (Mode == gbVar.ModeInsert)
                 {
                     bSucc = false;
                 }
-                else if (Mode == gbVar.ModeEdit && OldData.id != colors.id)
+                else if (Mode == gbVar.ModeEdit && OldData.id != warehouse.id)
                 {
                     bSucc = false;
                 }
@@ -112,7 +113,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             var sss = values.ToArray();
             if (sss[0] == ConstUtil.ACTIVE.YES)
             {
-                colors.inactivedate = null;
+                warehouse.inactivedate = null;
                 _picker.Clear();
             }
             StateHasChanged();
