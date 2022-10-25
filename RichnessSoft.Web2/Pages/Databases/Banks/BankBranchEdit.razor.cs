@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using RichnessSoft.Common;
 using RichnessSoft.Entity.Model;
+using RichnessSoft.Service.BS;
 using static log4net.Appender.ColoredConsoleAppender;
 
-namespace RichnessSoft.Web2.Pages.Databases.Products
+namespace RichnessSoft.Web2.Pages.Databases.Banks
 {
-    public partial class CustGroupEdit
+    public partial class BankBranchEdit
     {
         [Parameter]
         public int Id { get; set; }
@@ -18,26 +19,27 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         string backURL = "";
         string Mode { get; set; }
 
-        CustGroup custGroup { get; set; }
+        BankBranch bankBranch { get; set; }
         MudDatePicker _picker;
+
         private FluentValidationValidator _fluentValidationValidator;
         private bool Validated => _fluentValidationValidator.Validate(options => { options.IncludeAllRuleSets(); });
 
         protected override async Task OnInitializedAsync()
         {
-            backURL = "/Database/CustGroup/" + ParrentMenu;
+            backURL = "/Database/BankBranch/" + ParrentMenu;
             if (Id > 0)
             {
                 Mode = gbVar.ModeEdit;
-                var r = custgroupService.GetById(Id);
-                custGroup = (CustGroup)r.Data;
+                var r = bankbranchService.GetById(Id);
+                bankBranch = (BankBranch)r.Data;
             }
             else
             {
                 Mode = gbVar.ModeInsert;
-                custGroup = new CustGroup();
-                custGroup.companyid = store.CurentCompany.id;
-                custGroup.Active = ConstUtil.ACTIVE.YES;
+                bankBranch = new BankBranch();
+                bankBranch.companyid = store.CurentCompany.id;
+                bankBranch.active = ConstUtil.ACTIVE.YES;
             }
         }
         async void SaveAsync()
@@ -52,11 +54,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                 {
                     if (Mode == gbVar.ModeInsert)
                     {
-                        results = custgroupService.Add(custGroup);
+                        results = bankbranchService.Add(bankBranch);
                     }
                     else if (Mode == gbVar.ModeEdit)
                     {
-                        results = custgroupService.Edit(custGroup);
+                        results = bankbranchService.Edit(bankBranch);
                     }
                     _loaded = false;
                     if (results.Success)
@@ -64,11 +66,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                         await Dialog.ShowMessageBox("info", Lng["SAVE_MSG_SUCCESS"], "OK");
                         if (Mode == gbVar.ModeInsert)
                         {
-                            custGroup = new CustGroup();
+                            bankBranch = new BankBranch();
                         }
                         else
                         {
-                            NavigationManager.NavigateTo($"/Database/CustGroup/{ParrentMenu}");
+                            NavigationManager.NavigateTo($"/Database/BankBranch/{ParrentMenu}");
                         }
                     }
                     else
@@ -88,15 +90,15 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         private bool CheckDupCode()
         {
             bool bSucc = true;
-            var res = custgroupService.GetByCode(custGroup.companyid, custGroup.code);
-            if (res.Data != null && !string.IsNullOrEmpty(((CustGroup)res.Data)?.code))
+            var res = bankbranchService.GetByCode(bankBranch.companyid, bankBranch.code);
+            if (res.Data != null && !string.IsNullOrEmpty(((BankBranch)res.Data)?.code))
             {
-                CustGroup OldData = (CustGroup)res.Data;
+                BankBranch OldData = (BankBranch)res.Data;
                 if (Mode == gbVar.ModeInsert)
                 {
                     bSucc = false;
                 }
-                else if (Mode == gbVar.ModeEdit && OldData.id != custGroup.id)
+                else if (Mode == gbVar.ModeEdit && OldData.id != bankBranch.id)
                 {
                     bSucc = false;
                 }
@@ -112,7 +114,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             var sss = values.ToArray();
             if (sss[0] == ConstUtil.ACTIVE.YES)
             {
-                custGroup.inactivedate = null;
+                bankBranch.inactivedate = null;
                 _picker.Clear();
             }
             StateHasChanged();

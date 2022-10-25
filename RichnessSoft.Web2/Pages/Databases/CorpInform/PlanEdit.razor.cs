@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using RichnessSoft.Common;
 using RichnessSoft.Entity.Model;
-using static RichnessSoft.Common.GbDocRefType;
+using RichnessSoft.Service.BS;
+using System.Numerics;
 
-namespace RichnessSoft.Web2.Pages.Databases.Products
+namespace RichnessSoft.Web2.Pages.Databases.CorpInform
 {
-    public partial class BankEdit
+    public partial class PlanEdit
     {
         [Parameter]
         public int Id { get; set; }
@@ -18,7 +19,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         string backURL = "";
         string Mode { get; set; }
 
-        Bank bank { get; set; }
+        Plans plan { get; set; }
         MudDatePicker _picker;
 
         private FluentValidationValidator _fluentValidationValidator;
@@ -26,19 +27,19 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
 
         protected override async Task OnInitializedAsync()
         {
-            backURL = "/Database/Bank/" + ParrentMenu;
+            backURL = "/Database/Plan/" + ParrentMenu;
             if (Id > 0)
             {
                 Mode = gbVar.ModeEdit;
-                var r = colorService.GetById(Id);
-                bank = (Bank)r.Data;
+                var r = plansService.GetById(Id);
+                plan = (Plans)r.Data;
             }
             else
             {
                 Mode = gbVar.ModeInsert;
-                bank = new Bank();
-                bank.companyid = store.CurentCompany.id;
-                bank.active = ConstUtil.ACTIVE.YES;
+                plan = new Plans();
+                plan.companyid = store.CurentCompany.id;
+                plan.active = ConstUtil.ACTIVE.YES;
             }
         }
         async void SaveAsync()
@@ -53,11 +54,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                 {
                     if (Mode == gbVar.ModeInsert)
                     {
-                        results = bankService.Add(bank);
+                        results = plansService.Add(plan);
                     }
                     else if (Mode == gbVar.ModeEdit)
                     {
-                        results = bankService.Edit(bank);
+                        results = plansService.Edit(plan);
                     }
                     _loaded = false;
                     if (results.Success)
@@ -65,11 +66,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                         await Dialog.ShowMessageBox("info", Lng["SAVE_MSG_SUCCESS"], "OK");
                         if (Mode == gbVar.ModeInsert)
                         {
-                            bank = new Bank();
+                            plan = new Plans();
                         }
                         else
                         {
-                            NavigationManager.NavigateTo($"/Database/Bank/{ParrentMenu}");
+                            NavigationManager.NavigateTo($"/Database/Plan/{ParrentMenu}");
                         }
                     }
                     else
@@ -89,15 +90,15 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         private bool CheckDupCode()
         {
             bool bSucc = true;
-            var res = bankService.GetByCode(bank.companyid, bank.code);
-            if (res.Data != null && !string.IsNullOrEmpty(((Bank)res.Data)?.code))
+            var res = plansService.GetByCode(plan.companyid, plan.code);
+            if (res.Data != null && !string.IsNullOrEmpty(((Plans)res.Data)?.code))
             {
-                Bank OldData = (Bank)res.Data;
+                Plans OldData = (Plans)res.Data;
                 if (Mode == gbVar.ModeInsert)
                 {
                     bSucc = false;
                 }
-                else if (Mode == gbVar.ModeEdit && OldData.id != bank.id)
+                else if (Mode == gbVar.ModeEdit && OldData.id != plan.id)
                 {
                     bSucc = false;
                 }
@@ -113,7 +114,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             var sss = values.ToArray();
             if (sss[0] == ConstUtil.ACTIVE.YES)
             {
-                bank.inactivedate = null;
+                plan.inactivedate = null;
                 _picker.Clear();
             }
             StateHasChanged();

@@ -22,7 +22,7 @@
                             <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@ProductGroup.name2" T="string" Variant="ThemeApp.goVariant" Label="@Lng["PROD_GROUP_NAME_2"]" Required="false" />
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudSelect Margin="ThemeApp.goMargin" @bind-Value="@ProductGroup.active" Variant="ThemeApp.goVariant" T="string" Label="@Lng["PROD_GROUP_STATUS"]" AnchorOrigin="Origin.BottomCenter" SelectedValuesChanged="activeChange">
+                            <MudSelect Margin="ThemeApp.goMargin"  @bind-Value="@ProductGroup.active" Variant="ThemeApp.goVariant" T="string" Label="@Lng["PROD_GROUP_STATUS"]" AnchorOrigin="Origin.BottomCenter" SelectedValuesChanged="activeChange">
                                 @foreach (var item in ConstUtil.goListActive)
                                 {
                                     <MudSelectItem T="string" Value="@item.code">@item.name</MudSelectItem>
@@ -30,7 +30,7 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudDatePicker Margin="ThemeApp.goMargin" @ref="_picker" @bind-Value="@ProductGroup.inactivedate" Variant="ThemeApp.goVariant" Label="@Lng["PROD_GROUP_ACTIVE"]"
+                            <MudDatePicker Margin="ThemeApp.goMargin" @ref="_picker" Required @bind-Date="@ProductGroup.inactivedate" Variant="ThemeApp.goVariant" Label="@Lng["PROD_GROUP_ACTIVE"]"
                                            AutoClose="true"
                                            DateFormat="dd/MM/yyyy"
                                            TitleDateFormat="dd/MM/yyyy"

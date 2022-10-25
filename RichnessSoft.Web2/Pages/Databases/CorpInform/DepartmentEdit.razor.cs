@@ -4,9 +4,10 @@ using MudBlazor;
 using RichnessSoft.Common;
 using RichnessSoft.Entity.Model;
 
-namespace RichnessSoft.Web2.Pages.Databases.Products
+
+namespace RichnessSoft.Web2.Pages.Databases.CorpInform
 {
-    public partial class ColorsEdit
+    public partial class DepartmentEdit
     {
         [Parameter]
         public int Id { get; set; }
@@ -17,7 +18,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         string backURL = "";
         string Mode { get; set; }
 
-        Colour colors { get; set; }
+        Department Dep { get; set; }
         MudDatePicker _picker;
 
         private FluentValidationValidator _fluentValidationValidator;
@@ -25,19 +26,19 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
 
         protected override async Task OnInitializedAsync()
         {
-            backURL = "/Database/Color/" + ParrentMenu;
+            backURL = "/Database/Department/" + ParrentMenu;
             if (Id > 0)
             {
                 Mode = gbVar.ModeEdit;
-                var r = colorService.GetById(Id);
-                colors = (Colour)r.Data;
+                var r = departmentService.GetById(Id);
+                Dep = (Department)r.Data;
             }
             else
             {
                 Mode = gbVar.ModeInsert;
-                colors = new Colour();
-                colors.companyid = store.CurentCompany.id;
-                colors.active = ConstUtil.ACTIVE.YES;
+                Dep = new Department();
+                Dep.companyid = store.CurentCompany.id;
+                Dep.active = ConstUtil.ACTIVE.YES;
             }
         }
         async void SaveAsync()
@@ -52,11 +53,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                 {
                     if (Mode == gbVar.ModeInsert)
                     {
-                        results = colorService.Add(colors);
+                        results = departmentService.Add(Dep);
                     }
                     else if (Mode == gbVar.ModeEdit)
                     {
-                        results = colorService.Edit(colors);
+                        results = departmentService.Edit(Dep);
                     }
                     _loaded = false;
                     if (results.Success)
@@ -64,11 +65,11 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
                         await Dialog.ShowMessageBox("info", Lng["SAVE_MSG_SUCCESS"], "OK");
                         if (Mode == gbVar.ModeInsert)
                         {
-                            colors = new Colour();
+                            Dep = new Department();
                         }
                         else
                         {
-                            NavigationManager.NavigateTo($"/Database/Color/{ParrentMenu}");
+                            NavigationManager.NavigateTo($"/Database/Department/{ParrentMenu}");
                         }
                     }
                     else
@@ -88,15 +89,15 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
         private bool CheckDupCode()
         {
             bool bSucc = true;
-            var res = colorService.GetByCode(colors.companyid, colors.code);
-            if (res.Data != null && !string.IsNullOrEmpty(((Colour)res.Data)?.code))
+            var res = departmentService.GetByCode(Dep.companyid, Dep.code);
+            if (res.Data != null && !string.IsNullOrEmpty(((Department)res.Data)?.code))
             {
-                Colour OldData = (Colour)res.Data;
+                Department OldData = (Department)res.Data;
                 if (Mode == gbVar.ModeInsert)
                 {
                     bSucc = false;
                 }
-                else if (Mode == gbVar.ModeEdit && OldData.id != colors.id)
+                else if (Mode == gbVar.ModeEdit && OldData.id != Dep.id)
                 {
                     bSucc = false;
                 }
@@ -112,7 +113,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             var sss = values.ToArray();
             if (sss[0] == ConstUtil.ACTIVE.YES)
             {
-                colors.inactivedate = null;
+                Dep.inactivedate = null;
                 _picker.Clear();
             }
             StateHasChanged();

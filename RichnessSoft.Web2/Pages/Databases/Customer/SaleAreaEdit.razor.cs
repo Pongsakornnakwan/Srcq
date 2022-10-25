@@ -4,7 +4,7 @@ using MudBlazor;
 using RichnessSoft.Common;
 using RichnessSoft.Entity.Model;
 
-namespace RichnessSoft.Web2.Pages.Databases.Products
+namespace RichnessSoft.Web2.Pages.Databases.Customer
 {
     public partial class SaleAreaEdit
     {

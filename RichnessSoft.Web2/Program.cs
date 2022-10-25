@@ -62,6 +62,9 @@ builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<ICustGroupsService, CustGroupService>();
 builder.Services.AddScoped<ISaleAreaService, SaleAreaService>();
 builder.Services.AddScoped<IBankService, BankService>();
+builder.Services.AddScoped<IBankBranchService, BankBranchService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IPlansService, PlansService>();
 
 
 builder.Services.AddCors(options =>

@@ -29,7 +29,7 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudDatePicker Margin="ThemeApp.goMargin" @ref="_picker" @bind-Value="@grd.inactivedate" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_ACTIVE"]"
+                            <MudDatePicker Margin="ThemeApp.goMargin" @ref="_picker" Required @bind-Date="@grd.inactivedate" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_ACTIVE"]"
                                            AutoClose="true"
                                            DateFormat="dd/MM/yyyy"
                                            TitleDateFormat="dd/MM/yyyy"

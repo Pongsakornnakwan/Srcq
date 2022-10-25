@@ -1,27 +1,30 @@
-﻿@page "/Database/ColorsEdit/{Id:int}/{ParrentMenu}"
+﻿@page "/Database/BankEdit/{Id:int}/{ParrentMenu}"
 @inherits razorBase
 <MudOverlay @bind-Visible="@_loaded" DarkBackground="true" ZIndex="9999" AutoClose="true" />
-<AppTitle Title="@Lng["TITLE_COLOR"]" Description="" />
+<AppTitle Title="@Lng["TITLE_BANK"]" Description="" />
 <MudPaper MaxWidth="MaxWidth.Small" Class="d-flex justify-center flex-grow-1 gap-4" Elevation="0">
     <MudGrid Spacing="0" Class="d-flex justify-center flex-grow-1 gap-4">
         <MudItem xs="12" sm="5">
             <MudPaper Class="pa-4">
-                <EditForm Model="@colors" OnValidSubmit="SaveAsync">
+                <EditForm Model="@bank" OnValidSubmit="SaveAsync">
 
                     <FluentValidationValidator @ref="_fluentValidationValidator" />
 
                     <MudGrid>
                         <MudItem xs="12" sm="12">
-                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@colors.code" T="string" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_CODE"]" />
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@bank.code" T="string" Variant="ThemeApp.goVariant" Label="@Lng["BANK_CODE"]" />
                         </MudItem>
                         <MudItem xs="12" sm="12">
-                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@colors.name1" T="string" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_NAME"]" Required="true" RequiredError="@(Lng["COLOR_NAME"] + "is required!")" />
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@bank.swicfcode" T="string" Variant="ThemeApp.goVariant" Label="@Lng["BANK_NAME"]" Required="true" RequiredError="@(Lng["BANK_NAME"] + "is required!")" />
                         </MudItem>
                         <MudItem xs="12" sm="12">
-                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@colors.name2" T="string" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_NAME_2"]" Required="false" />
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@bank.name1" T="string" Variant="ThemeApp.goVariant" Label="@Lng["BANK_NAME"]" Required="true" RequiredError="@(Lng["BANK_NAME"] + "is required!")" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12">
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@bank.name2" T="string" Variant="ThemeApp.goVariant" Label="@Lng["BANK_NAME_2"]" Required="false" />
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudSelect Margin="ThemeApp.goMargin" @bind-Value="@colors.active" Variant="ThemeApp.goVariant" T="string" Label="@Lng["COLOR_STATUS"]" AnchorOrigin="Origin.BottomCenter" SelectedValuesChanged="activeChange">
+                            <MudSelect Margin="ThemeApp.goMargin" @bind-Value="@bank.active" Variant="ThemeApp.goVariant" T="string" Label="@Lng["BANK_STATUS"]" AnchorOrigin="Origin.BottomCenter" SelectedValuesChanged="activeChange">
                                 @foreach (var item in ConstUtil.goListActive)
                                 {
                                     <MudSelectItem T="string" Value="@item.code">@item.name</MudSelectItem>
@@ -29,12 +32,12 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudDatePicker Margin="ThemeApp.goMargin" @ref="_picker" Required @bind-Date="@colors.inactivedate" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_ACTIVE"]"
+                            <MudDatePicker Margin="ThemeApp.goMargin" @ref="_picker" Required @bind-Date="@bank.inactivedate" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_ACTIVE"]"
                                            AutoClose="true"
                                            DateFormat="dd/MM/yyyy"
                                            TitleDateFormat="dd/MM/yyyy"
                                            Rounded="true"
-                                           ReadOnly="@(colors.active == ConstUtil.ACTIVE.YES)"
+                                           ReadOnly="@(bank.active == ConstUtil.ACTIVE.YES)"
                                            AllowKeyboardInput="false" />
                         </MudItem>
                         <MudItem xs="12" Style="color:red;">

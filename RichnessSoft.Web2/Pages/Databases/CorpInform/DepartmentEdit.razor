@@ -1,40 +1,40 @@
-﻿@page "/Database/SaleAreaEdit/{Id:int}/{ParrentMenu}"
+﻿@page "/Database/DepartmentEdit/{Id:int}/{ParrentMenu}"
 @inherits razorBase
 <MudOverlay @bind-Visible="@_loaded" DarkBackground="true" ZIndex="9999" AutoClose="true" />
-<AppTitle Title="@Lng["TITLE_SALEAREA"]" Description="" />
+<AppTitle Title="@Lng["TITLE_DEPT"]" Description="" />
 <MudPaper MaxWidth="MaxWidth.Small" Class="d-flex justify-center flex-grow-1 gap-4" Elevation="0">
     <MudGrid Spacing="0" Class="d-flex justify-center flex-grow-1 gap-4">
         <MudItem xs="12" sm="5">
             <MudPaper Class="pa-4">
-                <EditForm Model="@saleArea" OnValidSubmit="SaveAsync">
+                <EditForm Model="@Dep" OnValidSubmit="SaveAsync">
 
                     <FluentValidationValidator @ref="_fluentValidationValidator" />
 
                     <MudGrid>
                         <MudItem xs="12" sm="12">
-                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@saleArea.code" T="string" Variant="ThemeApp.goVariant" Label="@Lng["SALEAREA_CODE"]" />
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@Dep.code" T="string" Variant="ThemeApp.goVariant" Label="@Lng["DEPT_CODE"]" />
                         </MudItem>
                         <MudItem xs="12" sm="12">
-                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@saleArea.name1" T="string" Variant="ThemeApp.goVariant" Label="@Lng["SALEAREA_NAME"]" Required="true" RequiredError="@(Lng["SALEAREA_NAME"] + "is required!")" />
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@Dep.name" T="string" Variant="ThemeApp.goVariant" Label="@Lng["DEPT_NAME"]" Required="true" RequiredError="@(Lng["DEPT_NAME"] + "is required!")" />
                         </MudItem>
                         <MudItem xs="12" sm="12">
-                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@saleArea.name2" T="string" Variant="ThemeApp.goVariant" Label="@Lng["SALEAREA_NAME_2"]" Required="false" />
+                            <MudTextField Margin="ThemeApp.goMargin" @bind-Value="@Dep.name2" T="string" Variant="ThemeApp.goVariant" Label="@Lng["DEPT_NAME_2"]" Required="false" />
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudSelect Margin="ThemeApp.goMargin" @bind-Value="@saleArea.active" Variant="ThemeApp.goVariant" T="string" Label="@Lng["SALEAREA_STATUS"]" AnchorOrigin="Origin.BottomCenter" SelectedValuesChanged="activeChange">
+                            <MudSelect Margin="ThemeApp.goMargin" @bind-Value="@Dep.active" Variant="ThemeApp.goVariant" T="string" Label="@Lng["DEPT_STATUS"]" AnchorOrigin="Origin.BottomCenter" SelectedValuesChanged="activeChange">
                                 @foreach (var item in ConstUtil.goListActive)
                                 {
-                                    <MudSelectItem T="string" Value="@item.code">@item.name</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@item.code">@item.name</MudSelectItem>
                                 }
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudDatePicker Margin="ThemeApp.goMargin" @ref="_picker" @bind-Value="@saleArea.inactivedate" Variant="ThemeApp.goVariant" Label="@Lng["SALEAREA_ACTIVE"]"
+                            <MudDatePicker Margin="ThemeApp.goMargin" @ref="_picker" @bind-Value="@Dep.inactivedate" Variant="ThemeApp.goVariant" Label="@Lng["COLOR_ACTIVE"]"
                                            AutoClose="true"
                                            DateFormat="dd/MM/yyyy"
                                            TitleDateFormat="dd/MM/yyyy"
                                            Rounded="true"
-                                           ReadOnly="@(saleArea.active == ConstUtil.ACTIVE.YES)"
+                                           ReadOnly="@(Dep.active == ConstUtil.ACTIVE.YES)"
                                            AllowKeyboardInput="false" />
                         </MudItem>
                         <MudItem xs="12" Style="color:red;">

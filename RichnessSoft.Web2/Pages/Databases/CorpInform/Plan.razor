@@ -1,8 +1,8 @@
-﻿@page "/Database/Bank"
-@page "/Database/Bank/{ParrentMenu}"
+﻿@page "/Database/Plan"
+@page "/Database/Plan/{ParrentMenu}"
 @inherits razorBase
 <MudOverlay @bind-Visible="@_loaded" DarkBackground="true" ZIndex="9999" AutoClose="true" />
-<AppTitle Title="@Lng["TITLE_BANK"]" Description="" />
+<AppTitle Title="@Lng["TITLE_PLAN"]" Description="" />
 <MudPaper Elevation="20" Square="false">
     <MudToolBar Dense="false" DisableGutters="true">
         <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Variant="ThemeApp.goVariant" Color="MudBlazor.Color.Surface" ButtonType="ButtonType.Button" @onclick="(()=> NavigationManager.NavigateTo(backURL))" title="กลับ" Class="mr-1">@Lng["BACK"]</MudIconButton>
@@ -11,25 +11,25 @@
         <MudIconButton Icon="@Icons.Material.Outlined.Refresh" Variant="ThemeApp.goVariant" Color="MudBlazor.Color.Success" ButtonType="ButtonType.Button" @onclick="ReloadAsync" title="รีเฟรส" Class="mr-1">@Lng["REFRESH"]</MudIconButton>
     </MudToolBar>
 </MudPaper>
-<MudTable Virtualize="true" Hover="true" Loading="@_loaded" Elevation="25" Items="ListData" Dense="true" Bordered="false" Striped="false" Filter="new Func<Bank, bool>(Search)" @bind-user="_bank">
+<MudTable Virtualize="true" Hover="true" Loading="@_loaded" Elevation="25" Items="ListData" Dense="true" Bordered="false" Striped="false" Filter="new Func<Plans, bool>(Search)" @bind-user="_plan">
     <ToolBarContent>
         <MudSpacer />
         <MudTextField @bind-Value="_searchString" Immediate="true" FullWidth=false Placeholder="@Lng["ButtonShowFilterRow"]" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="MudBlazor.Size.Medium" Class="mt-0 mb-3"></MudTextField>
     </ToolBarContent>
     <HeaderContent>
-        <MudTh><MudTableSortLabel SortBy="new Func<Bank, object>(x => x.code)">@Lng["BANK_CODE"]</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Bank, object>(x => x.name1)">@Lng["BANK_NAME"]</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Bank, object>(x => x.name2)">@Lng["BANK_NAME_2"]</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Plans, object>(x => x.code)">@Lng["PLAN_CODE"]</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Plans, object>(x => x.name1)">@Lng["PLAN_NAME"]</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Plans, object>(x => x.name2)">@Lng["PLAN_NAME_2"]</MudTableSortLabel></MudTh>
         <MudTh Style="text-align:center;width:70px;">Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="@Lng["BANKR_CODE"]">
+        <MudTd DataLabel="@Lng["PLAN_CODE"]">
             <MudHighlighter Text="@context.code" HighlightedText="@_searchString" />
         </MudTd>
-        <MudTd DataLabel="@Lng["BANK_NAME"]">
+        <MudTd DataLabel="@Lng["PLAN_NAME"]">
             <MudHighlighter Text="@context.name1" HighlightedText="@_searchString" />
         </MudTd>
-        <MudTd DataLabel="@Lng["BANK_NAME_2"]">
+        <MudTd DataLabel="@Lng["PLAN_NAME_2"]">
             <MudHighlighter Text="@context.name2" HighlightedText="@_searchString" />
         </MudTd>
         <MudTd DataLabel="Actions" Style="text-align:center">

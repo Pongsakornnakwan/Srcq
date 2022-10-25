@@ -4,18 +4,18 @@ using MudBlazor;
 using RichnessSoft.Entity.Model;
 using RichnessSoft.Service.BS;
 
-namespace RichnessSoft.Web2.Pages.Databases.Products
+namespace RichnessSoft.Web2.Pages.Databases.Banks
 {
-    public partial class CustGroups
+    public partial class Banks
     {
         [Parameter]
         public string ParrentMenu { get; set; }
 
         private bool _loaded;
         string backURL = "";
-        List<CustGroup> ListData = new List<CustGroup>();
+        List<Bank> ListData = new List<Bank>();
         private string _searchString { get; set; }
-        private CustGroup _custGroup { get; set; }
+        private Bank _bank { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -31,8 +31,8 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             if (store.CurentCompany == null)
                 return;
 
-            var res = await Task.Run(() => custgroupService.GetAllAsync(store.CurentCompany.id));
-            ListData = (List<CustGroup>)res.Data;
+            var res = await Task.Run(() => bankService.GetAllAsync(store.CurentCompany.id));
+            ListData = (List<Bank>)res.Data;
         }
         protected override void OnParametersSet()
         {
@@ -41,7 +41,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
 
         async void AddNewAsync()
         {
-            string URL = $"/Database/CustGroupEdit/0/{ParrentMenu}";
+            string URL = $"/Database/BankEdit/0/{ParrentMenu}";
             NavigationManager.NavigateTo(URL);
         }
 
@@ -55,7 +55,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
 
         async void OnEdit(int id)
         {
-            string URL = $"/Database/CustGroupEdit/{id}/{ParrentMenu}";
+            string URL = $"/Database/BankEdit/{id}/{ParrentMenu}";
             NavigationManager.NavigateTo(URL);
         }
 
@@ -68,9 +68,9 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             if (result == true)
             {
                 _loaded = true;
-                var r = custgroupService.GetById(id);
-                CustGroup custGroup = (CustGroup)r.Data;
-                var res = custgroupService.Delete(custGroup);
+                var r = bankService.GetById(id);
+                Bank bank = (Bank)r.Data;
+                var res = bankService.Delete(bank);
                 if (res.Success)
                 {
                     await Dialog.ShowMessageBox("info", Lng["CONFIRM_MSG_DEL_SUCCESS"], "OK");
@@ -86,18 +86,22 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             }
         }
 
-        private bool Search(CustGroup custGroup)
+        private bool Search(Bank bank)
         {
             if (string.IsNullOrWhiteSpace(_searchString)) return true;
-            if (custGroup.code?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            if (bank.code?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }
-            if (custGroup.Name?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            if (bank.swicfcode?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }
-            if (custGroup.name2?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            if (bank.name1?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return true;
+            }
+            if (bank.name2?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }

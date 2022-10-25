@@ -2,20 +2,20 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 using MudBlazor;
 using RichnessSoft.Entity.Model;
-using RichnessSoft.Service.BS;
+using System.Runtime.Intrinsics.Arm;
 
-namespace RichnessSoft.Web2.Pages.Databases.Products
+namespace RichnessSoft.Web2.Pages.Databases.CorpInform
 {
-    public partial class Banks
+    public partial class Departments
     {
         [Parameter]
         public string ParrentMenu { get; set; }
 
         private bool _loaded;
         string backURL = "";
-        List<Bank> ListData = new List<Bank>();
+        List<Department> ListData = new List<Department>();
         private string _searchString { get; set; }
-        private Bank _bank { get; set; }
+        private Department _Dep { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -31,8 +31,8 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             if (store.CurentCompany == null)
                 return;
 
-            var res = await Task.Run(() => bankService.GetAllAsync(store.CurentCompany.id));
-            ListData = (List<Bank>)res.Data;
+            var res = await Task.Run(() => departmentService.GetAllAsync(store.CurentCompany.id));
+            ListData = (List<Department>)res.Data;
         }
         protected override void OnParametersSet()
         {
@@ -41,7 +41,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
 
         async void AddNewAsync()
         {
-            string URL = $"/Database/BankEdit/0/{ParrentMenu}";
+            string URL = $"/Database/DepartmentEdit/0/{ParrentMenu}";
             NavigationManager.NavigateTo(URL);
         }
 
@@ -55,7 +55,7 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
 
         async void OnEdit(int id)
         {
-            string URL = $"/Database/BankEdit/{id}/{ParrentMenu}";
+            string URL = $"/Database/DepartmentEditsEdit/{id}/{ParrentMenu}";
             NavigationManager.NavigateTo(URL);
         }
 
@@ -68,9 +68,9 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             if (result == true)
             {
                 _loaded = true;
-                var r = bankService.GetById(id);
-                Bank bank = (Bank)r.Data;
-                var res = bankService.Delete(bank);
+                var r = departmentService.GetById(id);
+                Department Dep = (Department)r.Data;
+                var res = departmentService.Delete(Dep);
                 if (res.Success)
                 {
                     await Dialog.ShowMessageBox("info", Lng["CONFIRM_MSG_DEL_SUCCESS"], "OK");
@@ -86,18 +86,18 @@ namespace RichnessSoft.Web2.Pages.Databases.Products
             }
         }
 
-        private bool Search(Bank bank)
+        private bool Search(Department Dep)
         {
             if (string.IsNullOrWhiteSpace(_searchString)) return true;
-            if (bank.code?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            if (Dep.code?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }
-            if (bank.name1?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            if (Dep.name?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }
-            if (bank.name2?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            if (Dep.name2?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }
